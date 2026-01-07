@@ -1317,29 +1317,59 @@ $\Rightarrow$ \textcolor{green!60!black}{\textbf{Exists}} (Theorem 1.7)
 \end{column}
 \begin{column}{0.45\textwidth}
 \begin{center}
-\textbf{Existence Checklist}
+\textbf{l.s.c. vs u.s.c. Cost Functions}
 
-\vspace{0.2cm}
-\begin{tikzpicture}[scale=0.6]
-    % Checklist
-    \node[anchor=west] at (0, 3) {$\checkmark$ Spaces Polish?};
-    \node[anchor=west] at (0, 2) {$\checkmark$ Cost l.s.c.?};
-    \node[anchor=west] at (0, 1) {$\checkmark$ Measures tight?};
+\vspace{0.15cm}
+\begin{tikzpicture}[scale=0.45]
+    % l.s.c. function: |x-y|^2 (case a)
+    \draw[->] (-0.3,0) -- (3.5,0) node[right] {\footnotesize $z$};
+    \draw[->] (0,-0.3) -- (0,2.8) node[above] {\footnotesize $c$};
 
-    % Arrow
-    \draw[-{Stealth}, thick] (2, 0.5) -- (2, -0.5);
+    % c = z^2 (parabola, l.s.c.)
+    \draw[blue!70, very thick, domain=0:1.5] plot (\x*2, {\x*\x*1.2});
 
-    \node[anchor=west, green!60!black, font=\bfseries] at (0, -1) {$\Rightarrow$ Solution exists!};
+    \fill[blue!70] (0, 0) circle (3pt);
+    \node[blue!70, font=\footnotesize] at (2.5, 2.3) {$|x-y|^2$};
+    \node[below, font=\footnotesize] at (1.5, -0.4) {\textcolor{green!60!black}{\checkmark} l.s.c.};
 
-    % Box
-    \draw[thick, rounded corners] (-0.3, -1.5) rectangle (4.5, 3.5);
+    % Arrow showing min at 0
+    \draw[-{Stealth}, gray, thick] (0.5, 0.5) -- (0.1, 0.1);
+    \node[gray, font=\tiny] at (1, 0.8) {min};
 \end{tikzpicture}
 
-\vspace{0.4cm}
-\textbf{Case (c) fails:}\\
-$c(x,y) = \frac{1}{|x-y|}$ is \textbf{u.s.c.}, not l.s.c.!
+\vspace{0.15cm}
+\begin{tikzpicture}[scale=0.45]
+    % u.s.c. function: 1/|x-y| (case c)
+    \draw[->] (-0.3,0) -- (3.5,0) node[right] {\footnotesize $z=|x-y|$};
+    \draw[->] (0,-0.3) -- (0,3) node[above] {\footnotesize $c$};
 
-Standard existence theory doesn't apply.
+    % c = 1/z (hyperbola, u.s.c. - blows up)
+    \draw[red!70, very thick, domain=0.35:1.5] plot (\x*2, {1/\x});
+
+    % Asymptote
+    \draw[red!70, dashed] (0.1, 0) -- (0.1, 2.8);
+
+    \node[red!70, font=\footnotesize] at (2.8, 2.3) {$\frac{1}{|x-y|}$};
+    \node[below, font=\footnotesize] at (1.5, -0.4) {\textcolor{red}{$\times$} NOT l.s.c.};
+
+    % Arrow showing blow-up
+    \draw[-{Stealth}, gray, thick] (0.5, 1.5) -- (0.2, 2.5);
+    \node[gray, font=\tiny] at (1.2, 2.2) {$\to\infty$};
+\end{tikzpicture}
+
+\vspace{0.15cm}
+\begin{tikzpicture}[scale=0.45]
+    % Bounded continuous: e^{-|x-y|} (case d)
+    \draw[->] (-0.3,0) -- (3.5,0) node[right] {\footnotesize $z$};
+    \draw[->] (0,-0.3) -- (0,2) node[above] {\footnotesize $c$};
+
+    % c = e^{-z}
+    \draw[green!60!black, very thick, domain=0:3] plot (\x, {1.5*exp(-\x)});
+
+    \fill[green!60!black] (0, 1.5) circle (3pt);
+    \node[green!60!black, font=\footnotesize] at (2.5, 1.3) {$e^{-|x-y|}$};
+    \node[below, font=\footnotesize] at (1.5, -0.4) {\textcolor{green!60!black}{\checkmark} bounded, l.s.c.};
+\end{tikzpicture}
 \end{center}
 \end{column}
 \end{columns}
