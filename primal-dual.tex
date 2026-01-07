@@ -9,7 +9,7 @@
 \usepackage{mathtools}
 \usepackage{bm}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,calc,patterns}
+\usetikzlibrary{arrows.meta,positioning,calc,patterns,decorations.markings}
 
 % Custom commands
 \newcommand{\R}{\mathbb{R}}
@@ -17,6 +17,7 @@
 \newcommand{\Mm}{\mathcal{M}}
 \newcommand{\Ld}{\mathcal{L}^d}
 \newcommand{\Cb}{C_b}
+\newcommand{\Czero}{C_0}
 
 % Title
 \title{Primal and Dual Problems}
@@ -43,28 +44,34 @@
 \begin{frame}{Notation: Spaces and Measures}
 \textbf{Measure Spaces:}
 \begin{itemize}
-    \item $\Pp(X)$: probability measures on $X$
-    \item $\Mm(X)$: finite signed measures on $X$
-    \item $\Mm_+(X)$: positive finite measures on $X$
-    \item $\Mm^d(X)$: vector measures (valued in $\R^d$) on $X$
+    \item $\Pp(X)$: \textbf{probability measures} on $X$ \quad ($\mu(X) = 1$, $\mu \geq 0$)
+    \item $\Mm(X)$: \textbf{finite signed measures} on $X$ \quad ($\mu = \mu^+ - \mu^-$)
+    \item $\Mm_+(X)$: \textbf{positive finite measures} on $X$ \quad ($\mu \geq 0$, $\mu(X) < \infty$)
 \end{itemize}
 
 \vspace{0.3cm}
-\textbf{Special Measures:}
+\textbf{Dirac Mass:}
 \[
-\underbrace{\delta_a}_{\text{Dirac mass at } a}: \quad \delta_a(A) = \begin{cases} 1 & \text{if } a \in A \\ 0 & \text{if } a \notin A \end{cases}
+\underbrace{\delta_a(A)}_{\text{Dirac at } a} := \begin{cases} 1 & \text{if } a \in A \\ 0 & \text{if } a \notin A \end{cases}
 \]
 
 \vspace{0.2cm}
 \begin{center}
 \begin{tikzpicture}[scale=0.6]
-    \draw[->] (-0.5,0) -- (4,0) node[right] {$x$};
-    \draw[->] (0,-0.3) -- (0,2) node[above] {};
-    \fill[blue!70] (2,0) circle (3pt);
-    \node[below] at (2,-0.1) {$a$};
-    \draw[-{Stealth},blue!70,thick] (2,0) -- (2,1.5);
-    \node[right,blue!70] at (2.1,1.5) {$\delta_a$};
-    \node at (2,-0.8) {\small all mass at point $a$};
+    \draw[->] (-0.5,0) -- (5,0) node[right] {$x$};
+    \draw[->] (0,-0.3) -- (0,2.2) node[above] {};
+
+    % Continuous density
+    \draw[blue!50, thick] plot[smooth, domain=0.5:2.5] (\x, {0.8*exp(-2*(\x-1.5)^2)});
+    \node[blue!50, font=\small] at (1.5, 1.2) {density $f$};
+
+    % Dirac mass
+    \fill[red!70] (4,0) circle (3pt);
+    \draw[-{Stealth},red!70,very thick] (4,0) -- (4,1.8);
+    \node[red!70, font=\small] at (4, 2.1) {$\delta_a$};
+    \node[below] at (4,-0.1) {$a$};
+
+    \node at (2.5, -0.8) {\small point mass vs continuous};
 \end{tikzpicture}
 \end{center}
 \end{frame}
@@ -85,18 +92,23 @@
 \vspace{0.3cm}
 \textbf{Density:} $f \cdot \mu$ denotes measure with density $f$ w.r.t. $\mu$:
 \[
-(f \cdot \mu)(A) = \int_A f \, d\mu
+\underbrace{(f \cdot \mu)(A)}_{\text{measure of } A} = \int_A \underbrace{f(x)}_{\text{density}} \, \underbrace{d\mu(x)}_{\text{base measure}}
 \]
 
 \vspace{0.3cm}
-\textbf{Restriction:} $\mu \llcorner A$ is $\mu$ restricted to set $A$ (i.e., $\mathbb{1}_A \cdot \mu$)
+\textbf{Restriction:} $\mu \llcorner A := \mathbb{1}_A \cdot \mu$ (restrict $\mu$ to set $A$)
 \end{frame}
 
 %==============================================================================
 \begin{frame}{Notation: Differential Operators}
+\begin{columns}
+\begin{column}{0.55\textwidth}
 \textbf{Gradient and Divergence:}
 \[
-\nabla u = \left( \frac{\partial u}{\partial x_1}, \ldots, \frac{\partial u}{\partial x_d} \right), \qquad \nabla \cdot \mathbf{v} = \sum_{i=1}^d \frac{\partial v_i}{\partial x_i}
+\nabla u = \left( \frac{\partial u}{\partial x_1}, \ldots, \frac{\partial u}{\partial x_d} \right)
+\]
+\[
+\nabla \cdot \mathbf{v} = \sum_{i=1}^d \frac{\partial v_i}{\partial x_i}
 \]
 
 \vspace{0.3cm}
@@ -106,35 +118,59 @@
 \]
 
 \vspace{0.3cm}
-\textbf{Hessian:} $D^2 u$ is the matrix of second derivatives:
+\textbf{$p$-Laplacian:}
 \[
-(D^2 u)_{ij} = \frac{\partial^2 u}{\partial x_i \partial x_j}
+\Delta_p u := \nabla \cdot \bigl(|\nabla u|^{p-2} \nabla u\bigr)
 \]
 
-\vspace{0.2cm}
+\textbf{Hessian:} $(D^2 u)_{ij} = \frac{\partial^2 u}{\partial x_i \partial x_j}$
+\end{column}
+\begin{column}{0.45\textwidth}
 \begin{center}
-\begin{tikzpicture}[scale=0.5]
-    \foreach \x in {0,1,2,3} {
-        \foreach \y in {0,1,2} {
-            \draw[-{Stealth},blue!60] (\x,\y) -- (\x+0.4,\y+0.2);
+\begin{tikzpicture}[scale=0.6]
+    % Gradient field
+    \foreach \x in {0,1,2,3,4} {
+        \foreach \y in {0,1,2,3} {
+            \pgfmathsetmacro{\dx}{0.3*(\x-2)}
+            \pgfmathsetmacro{\dy}{0.3*(\y-1.5)}
+            \draw[-{Stealth},blue!60] (\x,\y) -- (\x+\dx,\y+\dy);
         }
     }
-    \node at (1.5,-0.8) {\small gradient field $\nabla u$};
+    \node at (2,-0.8) {\small gradient field $\nabla u$};
+
+    % Level curves
+    \draw[gray!50, dashed] (2,1.5) ellipse (0.8 and 0.5);
+    \draw[gray!50, dashed] (2,1.5) ellipse (1.5 and 1);
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\begin{tikzpicture}[scale=0.5]
+    % Divergence illustration
+    \draw[->] (0,0) -- (0.6,0.3);
+    \draw[->] (0,0) -- (0.5,-0.4);
+    \draw[->] (0,0) -- (-0.4,0.5);
+    \draw[->] (0,0) -- (-0.5,-0.3);
+    \fill (0,0) circle (2pt);
+    \node at (0, -1.2) {\small $\nabla \cdot \mathbf{v} > 0$ (source)};
 \end{tikzpicture}
 \end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
-\begin{frame}{Notation: Transport}
+\begin{frame}{Notation: Transport Operations}
+\begin{columns}
+\begin{column}{0.55\textwidth}
 \textbf{Push-forward (Image Measure):}
 \[
-T_\# \mu : \quad (T_\# \mu)(A) := \mu(T^{-1}(A))
+\underbrace{(T_\# \mu)(A)}_{\text{mass in } A \text{ after } T} := \underbrace{\mu(T^{-1}(A))}_{\text{mass in preimage}}
 \]
 
 \vspace{0.2cm}
 \textbf{Transport Plans:}
 \[
-\Pi(\mu, \nu) = \left\{ \gamma \in \Pp(X \times Y) : (\pi_x)_\# \gamma = \mu, \; (\pi_y)_\# \gamma = \nu \right\}
+\Pi(\mu, \nu) = \left\{ \gamma \in \Pp(X \times Y) : \begin{array}{l} (\pi_x)_\# \gamma = \mu \\ (\pi_y)_\# \gamma = \nu \end{array} \right\}
 \]
 
 \vspace{0.2cm}
@@ -144,14 +180,77 @@ T_\# \mu : \quad (T_\# \mu)(A) := \mu(T^{-1}(A))
 \]
 
 \vspace{0.2cm}
-\textbf{Costs:}
-\begin{itemize}
-    \item $M(T)$: Monge cost of map $T$
-    \item $K(\gamma)$: Kantorovich cost of plan $\gamma$
-\end{itemize}
+\textbf{Transport plan from map:}
+\[
+\gamma_T := (\text{id}, T)_\# \mu
+\]
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.55]
+    % X space
+    \draw[blue!70,thick] (0,0) ellipse (1.2 and 0.8);
+    \node[blue!70] at (0,-1.2) {$X$};
+    \fill[blue!30] (-0.3,0) ellipse (0.4 and 0.25);
+    \node[font=\footnotesize] at (-0.3,0) {$T^{-1}(A)$};
+
+    % Arrow
+    \draw[-{Stealth},thick] (1.5,0) -- node[above] {\small $T$} (3,0);
+
+    % Y space
+    \draw[red!70,thick] (4.5,0) ellipse (1.2 and 0.8);
+    \node[red!70] at (4.5,-1.2) {$Y$};
+    \fill[red!30] (4.7,0) ellipse (0.4 and 0.25);
+    \node[font=\footnotesize] at (4.7,0) {$A$};
+
+    \node[font=\footnotesize] at (2.2,-1.8) {$\mu(T^{-1}(A)) = (T_\# \mu)(A)$};
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\begin{tikzpicture}[scale=0.5]
+    % X x Y product space
+    \draw[-{Stealth}] (0,0) -- (3.5,0) node[right] {\small $X$};
+    \draw[-{Stealth}] (0,0) -- (0,3) node[above] {\small $Y$};
+
+    % Transport plan support
+    \fill[red!30,opacity=0.5] (0.5,0.5) rectangle (2.5,2.5);
+    \node[font=\footnotesize] at (1.5,1.5) {$\gamma$};
+
+    % Marginals
+    \draw[blue!70,thick] (0.5,-0.3) -- (2.5,-0.3);
+    \node[blue!70,font=\footnotesize] at (1.5,-0.6) {$\mu$};
+    \draw[red!70,thick] (-0.3,0.5) -- (-0.3,2.5);
+    \node[red!70,font=\footnotesize] at (-0.6,1.5) {$\nu$};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\end{columns}
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Notation: Costs and Distances}
+\textbf{Monge Cost:} For transport map $T: X \to Y$
+\[
+M(T) := \int_X \underbrace{c(x, T(x))}_{\text{cost per unit}} \, \underbrace{d\mu(x)}_{\text{mass at } x}
+\]
+
+\vspace{0.3cm}
+\textbf{Kantorovich Cost:} For transport plan $\gamma \in \Pi(\mu,\nu)$
+\[
+K(\gamma) := \int_{X \times Y} \underbrace{c(x,y)}_{\text{cost } x \to y} \, \underbrace{d\gamma(x,y)}_{\text{mass } x \to y}
+\]
+
+\vspace{0.3cm}
+\textbf{Wasserstein Distance:}
+\[
+W_p(\mu,\nu) := \left( \inf_{\gamma \in \Pi(\mu,\nu)} \int |x-y|^p \, d\gamma \right)^{1/p}
+\]
 
 \vspace{0.2cm}
-\textbf{Wasserstein:} $W_p(\mu,\nu)$ distance, $\mathcal{W}_p$ space
+\textbf{Minimal Transport Cost:}
+\[
+\mathcal{T}_c(\mu,\nu) := \inf_{\gamma \in \Pi(\mu,\nu)} K(\gamma)
+\]
 \end{frame}
 
 %==============================================================================
@@ -163,10 +262,10 @@ Given $\mu \in \Pp(X)$, $\nu \in \Pp(Y)$, and cost $c: X \times Y \to [0, +\inft
 
 \vspace{0.3cm}
 \[
-\textbf{(MP)} \quad \inf \left\{ M(T) := \int_X \underbrace{c(x, T(x))}_{\text{cost to move } x \to T(x)} \, d\mu(x) \;:\; \underbrace{T_\# \mu = \nu}_{\text{mass balance}} \right\}
+\boxed{\textbf{(MP)} \quad \inf \left\{ M(T) := \int_X \underbrace{c(x, T(x))}_{\substack{\text{cost to move}\\ \text{unit mass } x \to T(x)}} \, d\mu(x) \;:\; \underbrace{T_\# \mu = \nu}_{\substack{\text{mass balance:}\\ \text{all mass arrives correctly}}} \right\}}
 \]
 
-\vspace{0.4cm}
+\vspace{0.3cm}
 \begin{center}
 \begin{tikzpicture}[scale=0.7]
     % Source
@@ -187,46 +286,85 @@ Given $\mu \in \Pp(X)$, $\nu \in \Pp(Y)$, and cost $c: X \times Y \to [0, +\inft
     \draw[-{Stealth},gray] (0.65,0.2) -- (4.15,0.3);
     \draw[-{Stealth},gray] (0.25,0.7) -- (4.45,0.8);
 
-    \node at (2.2,1.2) {$T$: bijection};
+    \node at (2.2,1.2) {$T$: \textbf{one-to-one}};
 \end{tikzpicture}
 \end{center}
+
+\vspace{0.2cm}
+\textbf{Historical context:} Monge (1781) studied moving earth from excavation to construction site.
 \end{frame}
 
 %==============================================================================
 \begin{frame}{Push-forward Measure}
 \textbf{Definition:} For map $T: X \to Y$ and measure $\mu$ on $X$:
 \[
-(T_\# \mu)(A) := \mu\bigl(\underbrace{T^{-1}(A)}_{\text{preimage of } A}\bigr) \quad \text{for every measurable } A \subset Y
+\underbrace{(T_\# \mu)(A)}_{\text{measure of } A \text{ under } T_\#\mu} := \mu\bigl(\underbrace{T^{-1}(A)}_{\text{preimage of } A}\bigr)
 \]
 
 \vspace{0.3cm}
-\textbf{Integral form:} For any measurable $\phi: Y \to \R$:
+\textbf{Integral characterization:} For any measurable $\phi: Y \to \R$:
 \[
-\int_Y \phi(y) \, d(T_\# \mu)(y) = \int_X \underbrace{\phi(T(x))}_{\text{composition}} \, d\mu(x)
+\int_Y \underbrace{\phi(y)}_{\text{test function}} \, d(T_\# \mu)(y) = \int_X \underbrace{\phi(T(x))}_{\text{composition}} \, d\mu(x)
 \]
 
 \vspace{0.3cm}
 \begin{center}
 \begin{tikzpicture}[scale=0.65]
     % X space
-    \draw[blue!70,thick] (0,0) ellipse (1.2 and 0.8);
-    \node[blue!70] at (0,-1.2) {$X$};
-    \fill[blue!30] (-0.3,0) ellipse (0.5 and 0.3);
-    \node[font=\small] at (-0.3,0) {$T^{-1}(A)$};
+    \draw[blue!70,thick] (0,0) ellipse (1.3 and 0.9);
+    \node[blue!70] at (0,-1.3) {$(X, \mu)$};
+    \fill[blue!30] (-0.4,0) ellipse (0.5 and 0.35);
+    \node[font=\small] at (-0.4,0) {$T^{-1}(A)$};
 
     % Arrow
-    \draw[-{Stealth},thick] (1.5,0) -- node[above] {$T$} (3,0);
+    \draw[-{Stealth},thick] (1.6,0) -- node[above] {$T$} (3.2,0);
 
     % Y space
-    \draw[red!70,thick] (4.5,0) ellipse (1.2 and 0.8);
-    \node[red!70] at (4.5,-1.2) {$Y$};
-    \fill[red!30] (4.7,0) ellipse (0.5 and 0.3);
-    \node[font=\small] at (4.7,0) {$A$};
+    \draw[red!70,thick] (4.8,0) ellipse (1.3 and 0.9);
+    \node[red!70] at (4.8,-1.3) {$(Y, T_\#\mu)$};
+    \fill[red!30] (5,0) ellipse (0.5 and 0.35);
+    \node[font=\small] at (5,0) {$A$};
 
     % Measure annotation
-    \node at (2.2,-1.8) {$\mu(T^{-1}(A)) = (T_\# \mu)(A)$};
+    \draw[<->,gray] (-0.4,-0.5) -- node[below,font=\footnotesize] {same mass} (5,-0.5);
 \end{tikzpicture}
 \end{center}
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Jacobian Equation}
+When $\mu = f \cdot \Ld$ and $\nu = g \cdot \Ld$ have densities, and $T$ is a diffeomorphism:
+
+\vspace{0.3cm}
+\[
+\boxed{\underbrace{g(T(x))}_{\text{target density at } T(x)} \cdot \underbrace{|\det DT(x)|}_{\text{volume change factor}} = \underbrace{f(x)}_{\text{source density at } x}}
+\]
+
+\vspace{0.3cm}
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+    % Source region
+    \draw[blue!70, thick] (0,0) rectangle (1.5,1.5);
+    \fill[blue!30, opacity=0.5] (0,0) rectangle (1.5,1.5);
+    \node[font=\small] at (0.75, 0.75) {$f(x)$};
+    \node[below, font=\small] at (0.75, -0.2) {volume $V$};
+
+    % Arrow
+    \draw[-{Stealth}, thick] (2, 0.75) -- node[above] {$T$} (3.5, 0.75);
+
+    % Target region (stretched)
+    \draw[red!70, thick] (4,0) -- (6.5,0.3) -- (6.8,2) -- (4.3,1.7) -- cycle;
+    \fill[red!30, opacity=0.5] (4,0) -- (6.5,0.3) -- (6.8,2) -- (4.3,1.7) -- cycle;
+    \node[font=\small] at (5.4, 1) {$g(y)$};
+    \node[below, font=\small] at (5.4, -0.2) {volume $|\det DT| \cdot V$};
+
+    % Conservation
+    \node at (3.5, -1.2) {\small mass $= f \cdot V = g \cdot |\det DT| \cdot V$};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.2cm}
+\textbf{Interpretation:} Mass conservation under the map $T$.
 \end{frame}
 
 %==============================================================================
@@ -234,7 +372,7 @@ Given $\mu \in \Pp(X)$, $\nu \in \Pp(Y)$, and cost $c: X \times Y \to [0, +\inft
 \textbf{Problem:} A transport \emph{map} $T$ sends each point to exactly one destination.
 
 \vspace{0.3cm}
-\textbf{Example:} $\mu = \delta_0$, $\nu = \frac{1}{2}\delta_a + \frac{1}{2}\delta_b$
+\textbf{Example:} $\mu = \delta_0$, $\nu = \frac{1}{2}\delta_{-1} + \frac{1}{2}\delta_{1}$
 
 \vspace{0.3cm}
 \begin{center}
@@ -242,32 +380,126 @@ Given $\mu \in \Pp(X)$, $\nu \in \Pp(Y)$, and cost $c: X \times Y \to [0, +\inft
     % Source
     \fill[blue!70] (0,0) circle (5pt);
     \node[below] at (0,-0.5) {$\mu = \delta_0$};
+    \node[above] at (0,0.3) {mass $= 1$};
 
     % Targets
     \fill[red!70] (4,0.8) circle (3pt);
-    \node[right] at (4.2,0.8) {$\frac{1}{2}\delta_a$};
+    \node[right] at (4.2,0.8) {$\frac{1}{2}\delta_{-1}$};
     \fill[red!70] (4,-0.8) circle (3pt);
-    \node[right] at (4.2,-0.8) {$\frac{1}{2}\delta_b$};
+    \node[right] at (4.2,-0.8) {$\frac{1}{2}\delta_{1}$};
 
     % Impossible arrows
-    \draw[-{Stealth},gray,dashed] (0.1,0.05) -- (3.9,0.75);
-    \draw[-{Stealth},gray,dashed] (0.1,-0.05) -- (3.9,-0.75);
+    \draw[-{Stealth},gray,dashed] (0.15,0.1) -- (3.85,0.7);
+    \draw[-{Stealth},gray,dashed] (0.15,-0.1) -- (3.85,-0.7);
 
     % X mark
     \node[red,font=\Large] at (2,0) {\textbf{$\times$}};
-    \node[red] at (2,-0.5) {\small impossible!};
+    \node[red] at (2,-0.5) {\small impossible to split!};
 \end{tikzpicture}
 \end{center}
 
 \vspace{0.3cm}
-$\Rightarrow$ \textbf{No transport map exists!} The constraint $T_\# \mu = \nu$ cannot be satisfied.
+$\Rightarrow$ \textbf{No transport map exists!}
 
 \vspace{0.2cm}
-\textbf{Other issues:}
+\textbf{Other issues with Monge problem:}
 \begin{itemize}
-    \item Constraint $T_\# \mu = \nu$ is \textbf{nonlinear}
-    \item Not closed under weak convergence
+    \item Constraint $T_\# \mu = \nu$ is \textbf{nonlinear} in $T$
+    \item Set of admissible maps is \textbf{not closed} under weak limits
 \end{itemize}
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Exercise 1: Push-forward Computation}
+\textbf{Problem:} Let $\mu$ be the uniform distribution on $[0,1]$ (i.e., $\mu = \mathbb{1}_{[0,1]} \cdot \Ld$).
+
+Let $T(x) = 2x$.
+
+\vspace{0.5cm}
+\textbf{Questions:}
+\begin{enumerate}
+    \item[(a)] What is $T_\# \mu$? Find its density.
+    \item[(b)] Verify your answer using the integral characterization:
+    \[
+    \int_\R \phi(y) \, d(T_\# \mu)(y) = \int_0^1 \phi(2x) \, dx
+    \]
+    \item[(c)] What is the Jacobian equation in this case?
+\end{enumerate}
+
+\vspace{0.3cm}
+\textit{Hint:} For (a), determine the support of $T_\# \mu$ and use mass conservation.
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Solution 1}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{(a)} $T(x) = 2x$ maps $[0,1]$ to $[0,2]$.
+
+By mass conservation: total mass $= 1$.
+
+If $T_\# \mu = g \cdot \Ld$, then $\int_0^2 g(y) \, dy = 1$.
+
+Using Jacobian: $g(2x) \cdot 2 = 1$, so $g(y) = \frac{1}{2}$.
+
+\[
+\boxed{T_\# \mu = \frac{1}{2} \mathbb{1}_{[0,2]} \cdot \Ld}
+\]
+
+\vspace{0.3cm}
+\textbf{(b)} Verification:
+\[
+\int_0^2 \phi(y) \cdot \frac{1}{2} \, dy \stackrel{y=2x}{=} \int_0^1 \phi(2x) \, dx \;\checkmark
+\]
+
+\vspace{0.2cm}
+\textbf{(c)} Jacobian: $g(T(x)) |T'(x)| = f(x)$
+\[
+\frac{1}{2} \cdot 2 = 1 \;\checkmark
+\]
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.55]
+    % Source density
+    \draw[->] (-0.5,0) -- (3,0) node[right] {\small $x$};
+    \draw[->] (0,-0.3) -- (0,2) node[above] {};
+
+    \fill[blue!30, opacity=0.5] (0,0) rectangle (1.5,1.5);
+    \draw[blue!70, thick] (0,1.5) -- (1.5,1.5);
+    \draw[blue!70, thick] (0,0) -- (0,1.5);
+    \draw[blue!70, thick] (1.5,0) -- (1.5,1.5);
+    \node[blue!70] at (0.75, 1.8) {\small $f=1$};
+    \node at (0.75, -0.5) {\small $[0,1]$};
+
+    % Arrow
+    \draw[-{Stealth}, thick] (3.5, 0.75) -- node[above] {\small $T=2x$} (5, 0.75);
+
+    % Target density
+    \begin{scope}[xshift=5.5cm]
+    \draw[->] (-0.5,0) -- (4,0) node[right] {\small $y$};
+    \draw[->] (0,-0.3) -- (0,2) node[above] {};
+
+    \fill[red!30, opacity=0.5] (0,0) rectangle (3,0.75);
+    \draw[red!70, thick] (0,0.75) -- (3,0.75);
+    \draw[red!70, thick] (0,0) -- (0,0.75);
+    \draw[red!70, thick] (3,0) -- (3,0.75);
+    \node[red!70] at (1.5, 1.1) {\small $g=\frac{1}{2}$};
+    \node at (1.5, -0.5) {\small $[0,2]$};
+    \end{scope}
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\textbf{Key insight:}\\
+Stretching by factor 2 $\Rightarrow$ density halves!
+
+\vspace{0.2cm}
+\[
+\text{Area} = 1 \times 1 = 2 \times \frac{1}{2} = 1
+\]
+\end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
@@ -278,45 +510,87 @@ $\Rightarrow$ \textbf{No transport map exists!} The constraint $T_\# \mu = \nu$ 
 \textbf{Key insight:} Replace transport \emph{maps} with transport \emph{plans}.
 
 \vspace{0.3cm}
-A \textbf{transport plan} $\gamma$ on $X \times Y$ specifies: for each pair $(x,y)$, how much mass moves from $x$ to $y$.
+A \textbf{transport plan} $\gamma \in \Pp(X \times Y)$ specifies:
+\[
+\gamma(A \times B) = \text{``mass moving from region } A \text{ to region } B\text{''}
+\]
 
 \vspace{0.3cm}
-\[
-\gamma(A \times B) = \text{``mass moving from } A \text{ to } B\text{''}
-\]
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+    % Monge
+    \begin{scope}[xshift=-3cm]
+        \fill[blue!70] (0,0) circle (4pt);
+        \draw[-{Stealth},thick] (0.15,0) -- (1.85,0);
+        \fill[red!70] (2,0) circle (4pt);
+        \node at (1,-0.8) {\small \textbf{Monge:} 1-to-1};
+    \end{scope}
+
+    % Kantorovich (splitting)
+    \begin{scope}[xshift=3cm]
+        \fill[blue!70] (0,0) circle (4pt);
+        \draw[-{Stealth},thick] (0.1,0.1) -- (1.85,0.5);
+        \draw[-{Stealth},thick] (0.1,-0.1) -- (1.85,-0.5);
+        \fill[red!70] (2,0.5) circle (3pt);
+        \fill[red!70] (2,-0.5) circle (3pt);
+        \node at (1,-1) {\small \textbf{Kantorovich:} splitting OK};
+    \end{scope}
+\end{tikzpicture}
+\end{center}
 
 \vspace{0.3cm}
 \textbf{Marginal constraints:}
 \[
-\underbrace{(\pi_x)_\# \gamma = \mu}_{\text{total mass leaving } x} \quad \text{and} \quad \underbrace{(\pi_y)_\# \gamma = \nu}_{\text{total mass arriving at } y}
+\underbrace{(\pi_x)_\# \gamma = \mu}_{\text{total mass leaving each source}} \quad \text{and} \quad \underbrace{(\pi_y)_\# \gamma = \nu}_{\text{total mass arriving at each target}}
+\]
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Transport Plan Definition}
+\textbf{Set of transport plans:}
+\[
+\boxed{\Pi(\mu, \nu) := \left\{ \gamma \in \Pp(X \times Y) : \underbrace{(\pi_x)_\# \gamma = \mu}_{\text{1st marginal}}, \; \underbrace{(\pi_y)_\# \gamma = \nu}_{\text{2nd marginal}} \right\}}
 \]
 
+\vspace{0.3cm}
 where $\pi_x(x,y) = x$ and $\pi_y(x,y) = y$ are projections.
 
 \vspace{0.3cm}
-\textbf{Advantage:} Mass can \textbf{split}! From one $x$, mass can go to multiple $y$'s.
+\textbf{In terms of integrals:}
+\[
+\int_{X \times Y} \phi(x) \, d\gamma = \int_X \phi \, d\mu \quad \text{and} \quad \int_{X \times Y} \psi(y) \, d\gamma = \int_Y \psi \, d\nu
+\]
+
+\vspace{0.3cm}
+\textbf{Key property:} $\Pi(\mu,\nu) \neq \emptyset$ always!
+
+\vspace{0.2cm}
+\textit{Example:} The product measure $\mu \otimes \nu \in \Pi(\mu,\nu)$ (``independent coupling'').
 \end{frame}
 
 %==============================================================================
 \begin{frame}{Kantorovich Problem (KP)}
 \[
-\textbf{(KP)} \quad \inf \left\{ K(\gamma) := \int_{X \times Y} c(x,y) \, d\gamma(x,y) \;:\; \gamma \in \Pi(\mu, \nu) \right\}
-\]
-
-\vspace{0.3cm}
-where the set of \textbf{transport plans} is:
-\[
-\Pi(\mu, \nu) = \left\{ \gamma \in \Pp(X \times Y) : \underbrace{(\pi_x)_\# \gamma = \mu}_{\text{1st marginal}}, \; \underbrace{(\pi_y)_\# \gamma = \nu}_{\text{2nd marginal}} \right\}
+\boxed{\textbf{(KP)} \quad \inf \left\{ K(\gamma) := \int_{X \times Y} \underbrace{c(x,y)}_{\text{cost per unit}} \, \underbrace{d\gamma(x,y)}_{\text{mass from } x \text{ to } y} \;:\; \gamma \in \Pi(\mu, \nu) \right\}}
 \]
 
 \vspace{0.4cm}
 \textbf{Key advantages over (MP):}
-\begin{itemize}
-    \item \textbf{Linear} objective + \textbf{linear} constraints $\Rightarrow$ Linear Programming
-    \item $\Pi(\mu, \nu) \neq \emptyset$ always (e.g., $\mu \otimes \nu \in \Pi(\mu, \nu)$)
-    \item Existence guaranteed by weak-* compactness
-    \item Mass splitting allowed!
-\end{itemize}
+
+\begin{center}
+\begin{tabular}{l|c|c}
+& \textbf{Monge (MP)} & \textbf{Kantorovich (KP)} \\
+\hline
+Objective & Nonlinear in $T$ & \textbf{Linear} in $\gamma$ \\
+Constraints & Nonlinear $T_\#\mu = \nu$ & \textbf{Linear} marginals \\
+Existence & May not exist & \textbf{Always exists} \\
+Mass splitting & Not allowed & \textbf{Allowed} \\
+Convexity & Non-convex & \textbf{Convex} (LP)
+\end{tabular}
+\end{center}
+
+\vspace{0.3cm}
+$\Rightarrow$ \textbf{Linear Programming} problem!
 \end{frame}
 
 %==============================================================================
@@ -324,20 +598,23 @@ where the set of \textbf{transport plans} is:
 \begin{columns}
 \begin{column}{0.5\textwidth}
 \textbf{Monge map:}\\
-$x \mapsto T(x)$ (one destination per $x$)
+$x \mapsto T(x)$ (deterministic)
 
-\vspace{0.5cm}
+\vspace{0.4cm}
 \textbf{Kantorovich plan:}\\
-$\gamma(x,y)$ = mass from $x$ to $y$\\
-(can split!)
+$\gamma(x,y)$ specifies mass flow\\
+(probabilistic coupling)
 
-\vspace{0.5cm}
+\vspace{0.4cm}
 \textbf{Connection:}\\
-If $T$ is a map with $T_\# \mu = \nu$, then
+If $T$ is a transport map, then
 \[
-\gamma_T := (\text{id}, T)_\# \mu
+\gamma_T := (\text{id}, T)_\# \mu \in \Pi(\mu,\nu)
 \]
-is a valid transport plan.
+concentrates on $\{(x, T(x))\}$.
+
+\vspace{0.2cm}
+$\Rightarrow$ \textbf{(KP) relaxes (MP)}
 \end{column}
 \begin{column}{0.5\textwidth}
 \begin{center}
@@ -345,21 +622,37 @@ is a valid transport plan.
     \draw[-{Stealth}] (0,0) -- (4.5,0) node[right] {$X$};
     \draw[-{Stealth}] (0,0) -- (0,4.5) node[above] {$Y$};
 
-    % Transport plan blobs
-    \fill[red!50,opacity=0.7] (1,3) circle (6pt);
-    \fill[red!40,opacity=0.7] (2,2) circle (8pt);
-    \fill[red!30,opacity=0.7] (3,1) circle (5pt);
-    \fill[red!35,opacity=0.7] (1.5,2.5) circle (4pt);
-    \fill[red!45,opacity=0.7] (2.5,1.5) circle (6pt);
+    % General transport plan
+    \fill[red!50,opacity=0.6] (0.5,0.8) circle (8pt);
+    \fill[red!40,opacity=0.6] (1.5,2) circle (10pt);
+    \fill[red!30,opacity=0.6] (2.5,3.2) circle (7pt);
+    \fill[red!35,opacity=0.6] (3,1.5) circle (6pt);
+    \fill[red!45,opacity=0.6] (3.5,2.8) circle (8pt);
 
-    \node at (2,-0.8) {$\gamma$ on $X \times Y$};
+    \node at (2,-0.8) {\small general $\gamma$};
 
     % Marginal arrows
-    \draw[blue!70,thick] (0.3,4.3) -- (3.7,4.3);
-    \node[blue!70,font=\small] at (2,4.7) {$\mu$};
+    \draw[blue!70,thick,-{Stealth}] (0.5,4.2) -- (3.5,4.2);
+    \node[blue!70,font=\small] at (2,4.5) {project to $\mu$};
 
-    \draw[red!70,thick] (4.3,0.3) -- (4.3,3.7);
-    \node[red!70,font=\small] at (4.7,2) {$\nu$};
+    \draw[red!70,thick,-{Stealth}] (4.2,0.5) -- (4.2,3.5);
+    \node[red!70,font=\small,rotate=90] at (4.5,2) {project to $\nu$};
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\begin{tikzpicture}[scale=0.55]
+    \draw[-{Stealth}] (0,0) -- (4.5,0) node[right] {$X$};
+    \draw[-{Stealth}] (0,0) -- (0,4.5) node[above] {$Y$};
+
+    % Map-induced plan (on graph)
+    \draw[blue!70,thick] plot[smooth] coordinates {(0.3,0.5) (1,1.2) (2,2.5) (3,3) (4,3.8)};
+
+    \fill[red!70] (0.5,0.65) circle (4pt);
+    \fill[red!70] (1.5,1.7) circle (4pt);
+    \fill[red!70] (2.5,2.75) circle (4pt);
+    \fill[red!70] (3.5,3.4) circle (4pt);
+
+    \node at (2,-0.8) {\small $\gamma_T$ on graph of $T$};
 \end{tikzpicture}
 \end{center}
 \end{column}
@@ -368,12 +661,15 @@ is a valid transport plan.
 
 %==============================================================================
 \begin{frame}{Transport Plan from a Map}
-If $T: X \to Y$ is a transport map (i.e., $T_\# \mu = \nu$), define:
+If $T: X \to Y$ satisfies $T_\# \mu = \nu$, define:
 \[
 \gamma_T := (\text{id}, T)_\# \mu
 \]
 
-This means: $\gamma_T$ is concentrated on the \textbf{graph} of $T$.
+This means: $\gamma_T$ is concentrated on the \textbf{graph} $\{(x, T(x)) : x \in X\}$.
+
+\vspace{0.3cm}
+\textbf{Explicit formula:}
 \[
 \gamma_T(A \times B) = \mu\bigl(\{x \in A : T(x) \in B\}\bigr)
 \]
@@ -381,215 +677,672 @@ This means: $\gamma_T$ is concentrated on the \textbf{graph} of $T$.
 \vspace{0.3cm}
 \textbf{Key property:}
 \[
-\int_{X \times Y} c(x,y) \, d\gamma_T = \int_X c(x, T(x)) \, d\mu(x) = M(T)
+K(\gamma_T) = \int_{X \times Y} c(x,y) \, d\gamma_T = \int_X c(x, T(x)) \, d\mu(x) = M(T)
 \]
 
-\vspace{0.2cm}
-\begin{center}
-\begin{tikzpicture}[scale=0.5]
-    \draw[-{Stealth}] (0,0) -- (5,0) node[right] {$X$};
-    \draw[-{Stealth}] (0,0) -- (0,4) node[above] {$Y$};
-
-    % Graph of T
-    \draw[blue!70,thick] plot[smooth] coordinates {(0.5,0.8) (1.5,1.5) (2.5,2.2) (3.5,2.8) (4.5,3.5)};
-    \node[blue!70] at (3,3.5) {graph of $T$};
-
-    % Points on graph
-    \fill[red!70] (1.5,1.5) circle (3pt);
-    \fill[red!70] (2.5,2.2) circle (3pt);
-    \fill[red!70] (3.5,2.8) circle (3pt);
-
-    \node at (2.5,-0.8) {$\gamma_T$ supported on graph};
-\end{tikzpicture}
-\end{center}
+\vspace{0.3cm}
+$\Rightarrow$ \textbf{Optimal maps give optimal plans} (when they exist)
+\[
+\min(\text{KP}) \leq \min(\text{MP}) \quad \text{(equality under good conditions)}
+\]
 \end{frame}
 
 %==============================================================================
-\begin{frame}{Exercise 1: Discrete Transport Plans}
-\textbf{Problem:} Let $X = Y = \{1, 2\}$ with
+\begin{frame}{Exercise 2: Discrete Optimal Transport}
+\textbf{Problem:} Let $X = Y = \{a, b\}$ with
 \[
-\mu = \frac{1}{2}\delta_1 + \frac{1}{2}\delta_2, \qquad \nu = \frac{1}{2}\delta_1 + \frac{1}{2}\delta_2
+\mu = \frac{2}{3}\delta_a + \frac{1}{3}\delta_b, \qquad \nu = \frac{1}{3}\delta_a + \frac{2}{3}\delta_b
 \]
 
-A transport plan $\gamma \in \Pi(\mu, \nu)$ can be represented as a $2 \times 2$ matrix:
-\[
-\gamma = \begin{pmatrix} \gamma_{11} & \gamma_{12} \\ \gamma_{21} & \gamma_{22} \end{pmatrix}
-\]
-where $\gamma_{ij} = \gamma(\{i\} \times \{j\})$ = mass from $i$ to $j$.
+Cost matrix: $c(a,a) = 0$, $c(a,b) = 1$, $c(b,a) = 1$, $c(b,b) = 0$.
 
-\vspace{0.5cm}
+\vspace{0.3cm}
+A transport plan $\gamma$ can be written as a matrix:
+\[
+\gamma = \begin{pmatrix} \gamma_{aa} & \gamma_{ab} \\ \gamma_{ba} & \gamma_{bb} \end{pmatrix}
+\quad \text{where } \gamma_{xy} = \gamma(\{x\} \times \{y\})
+\]
+
+\vspace{0.3cm}
 \textbf{Questions:}
 \begin{enumerate}
-    \item[(a)] Write down the marginal constraints on the matrix entries.
-    \item[(b)] Describe the set of all valid transport plans.
-    \item[(c)] For cost $c(i,j) = |i-j|$, find the optimal plan.
+    \item[(a)] Write the marginal constraints.
+    \item[(b)] Parametrize all transport plans.
+    \item[(c)] Find the optimal transport plan and cost.
 \end{enumerate}
 \end{frame}
 
 %==============================================================================
-\begin{frame}{Solution 1}
+\begin{frame}{Solution 2}
+\begin{columns}
+\begin{column}{0.55\textwidth}
 \textbf{(a) Marginal constraints:}
 \begin{itemize}
-    \item Row sums $= \mu$: $\gamma_{11} + \gamma_{12} = \frac{1}{2}$, $\gamma_{21} + \gamma_{22} = \frac{1}{2}$
-    \item Column sums $= \nu$: $\gamma_{11} + \gamma_{21} = \frac{1}{2}$, $\gamma_{12} + \gamma_{22} = \frac{1}{2}$
+    \item Row sums $= \mu$: $\gamma_{aa} + \gamma_{ab} = \frac{2}{3}$, $\gamma_{ba} + \gamma_{bb} = \frac{1}{3}$
+    \item Column sums $= \nu$: $\gamma_{aa} + \gamma_{ba} = \frac{1}{3}$, $\gamma_{ab} + \gamma_{bb} = \frac{2}{3}$
 \end{itemize}
 
-\vspace{0.3cm}
-\textbf{(b) All plans:} With $\gamma_{11} = t \in [0, \frac{1}{2}]$:
+\vspace{0.2cm}
+\textbf{(b)} Let $t = \gamma_{aa} \in [0, \frac{1}{3}]$. Then:
 \[
-\gamma_t = \begin{pmatrix} t & \frac{1}{2}-t \\ \frac{1}{2}-t & t \end{pmatrix}
+\gamma_t = \begin{pmatrix} t & \frac{2}{3}-t \\ \frac{1}{3}-t & t \end{pmatrix}
 \]
 
-\vspace{0.3cm}
-\textbf{(c) Optimal plan:} Cost $= 0 \cdot \gamma_{11} + 1 \cdot \gamma_{12} + 1 \cdot \gamma_{21} + 0 \cdot \gamma_{22} = 1 - 2t$
-
-Minimized when $t = \frac{1}{2}$:
+\vspace{0.2cm}
+\textbf{(c)} Total cost:
 \[
-\gamma^* = \begin{pmatrix} 1/2 & 0 \\ 0 & 1/2 \end{pmatrix} \quad \Rightarrow \quad \text{Cost} = 0
+K(\gamma_t) = 0 \cdot t + 1 \cdot (\tfrac{2}{3}-t) + 1 \cdot (\tfrac{1}{3}-t) + 0 \cdot t = 1 - 2t
 \]
-\textbf{Interpretation:} Identity map (mass at $i$ stays at $i$).
+
+Minimize: $t^* = \frac{1}{3}$, so $K^* = \frac{1}{3}$.
+\[
+\gamma^* = \begin{pmatrix} 1/3 & 1/3 \\ 0 & 1/3 \end{pmatrix}
+\]
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+    % Source points
+    \fill[blue!70] (0, 1.5) circle (5pt);
+    \node[left] at (-0.2, 1.5) {$a$: $\frac{2}{3}$};
+    \fill[blue!70] (0, 0) circle (4pt);
+    \node[left] at (-0.2, 0) {$b$: $\frac{1}{3}$};
+
+    % Target points
+    \fill[red!70] (4, 1.5) circle (4pt);
+    \node[right] at (4.2, 1.5) {$a$: $\frac{1}{3}$};
+    \fill[red!70] (4, 0) circle (5pt);
+    \node[right] at (4.2, 0) {$b$: $\frac{2}{3}$};
+
+    % Optimal transport arrows
+    \draw[-{Stealth}, thick, green!60!black] (0.2, 1.5) -- node[above, font=\footnotesize] {$\frac{1}{3}$} (3.8, 1.5);
+    \draw[-{Stealth}, thick, green!60!black] (0.2, 1.4) -- node[below, font=\footnotesize, pos=0.4] {$\frac{1}{3}$} (3.8, 0.1);
+    \draw[-{Stealth}, thick, green!60!black] (0.2, 0) -- node[below, font=\footnotesize] {$\frac{1}{3}$} (3.8, -0.05);
+
+    \node at (2, -1) {\small optimal flow};
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\textbf{Interpretation:}
+\begin{itemize}
+    \item $\frac{1}{3}$ stays at $a$
+    \item $\frac{1}{3}$ moves $a \to b$
+    \item $\frac{1}{3}$ stays at $b$
+\end{itemize}
+
+Cost $= \frac{1}{3} \times 1 = \frac{1}{3}$
+\end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
 \section{Existence Theory}
 %==============================================================================
 
-\begin{frame}{Weierstrass Theorem}
-\textbf{Theorem (Direct Method):} If $f: X \to \R \cup \{+\infty\}$ is \textbf{l.s.c.} and $X$ is \textbf{compact}, then $f$ attains its minimum.
+\begin{frame}{Box 1.1: Weierstrass Theorem}
+\begin{block}{Weierstrass Theorem (Direct Method)}
+Let $X$ be a topological space and $f: X \to \R \cup \{+\infty\}$.
 
-\vspace{0.3cm}
-\textbf{Definition (Lower Semi-Continuity):}
-\[
-f \text{ is l.s.c.} \quad \Leftrightarrow \quad f(x) \leq \liminf_{n \to \infty} f(x_n) \quad \text{whenever } x_n \to x
-\]
-
-\vspace{0.3cm}
-\textbf{Proof idea:}
+If:
 \begin{enumerate}
-    \item Take minimizing sequence: $f(x_n) \to \ell := \inf f$
-    \item By compactness: $x_{n_k} \to \bar{x}$
-    \item By l.s.c.: $f(\bar{x}) \leq \liminf f(x_{n_k}) = \ell$
-    \item Since $\ell = \inf f$: $f(\bar{x}) = \ell = \min f$
+    \item $X$ is \textbf{compact}
+    \item $f$ is \textbf{lower semi-continuous} (l.s.c.)
 \end{enumerate}
 
-\vspace{0.2cm}
-\textbf{Strategy for (KP):} Show $\Pi(\mu,\nu)$ is compact and $K(\gamma) = \int c \, d\gamma$ is l.s.c.
+Then $f$ attains its minimum: $\exists \bar{x} \in X$ with $f(\bar{x}) = \inf_X f$.
+\end{block}
+
+\vspace{0.3cm}
+\textbf{Proof outline:}
+\begin{enumerate}
+    \item Take minimizing sequence: $f(x_n) \to \ell := \inf f$
+    \item By compactness: $x_{n_k} \to \bar{x}$ for some subsequence
+    \item By l.s.c.: $f(\bar{x}) \leq \liminf_{k} f(x_{n_k}) = \ell$
+    \item Since $\ell = \inf f$: $f(\bar{x}) = \ell = \min f$ \quad $\square$
+\end{enumerate}
 \end{frame}
 
 %==============================================================================
-\begin{frame}{Weak Convergence of Measures}
-\textbf{Definition:} $\mu_n \rightharpoonup \mu$ (weak convergence) if
+\begin{frame}{Lower Semi-Continuity (l.s.c.)}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{Definition:} $f: X \to \R \cup \{+\infty\}$ is \textbf{l.s.c.} if:
 \[
-\int \phi \, d\mu_n \to \int \phi \, d\mu \quad \text{for all } \phi \in \Cb(X)
+\boxed{f(x) \leq \liminf_{n \to \infty} f(x_n) \quad \text{whenever } x_n \to x}
 \]
 
 \vspace{0.3cm}
-\textbf{Definition (Tightness):} A sequence $(\mu_n)$ is \textbf{tight} if:
+\textbf{Equivalently:}
+\begin{itemize}
+    \item $\{x : f(x) \leq \alpha\}$ is closed for all $\alpha \in \R$
+    \item Epigraph $\{(x,t) : f(x) \leq t\}$ is closed
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Intuition:}
+\begin{itemize}
+    \item ``Jumps down'' are forbidden
+    \item ``Jumps up'' are allowed
+\end{itemize}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\textbf{l.s.c. vs continuous}
+
+\vspace{0.2cm}
+\begin{tikzpicture}[scale=0.55]
+    % Axes
+    \draw[->] (-0.5,0) -- (4.5,0) node[right] {\small $x$};
+    \draw[->] (0,-0.3) -- (0,3.5) node[above] {\small $f$};
+
+    % l.s.c. function (jump up allowed)
+    \draw[blue!70, very thick] plot[smooth, domain=0:1.9] (\x, {0.5 + 0.3*\x});
+    \draw[blue!70, very thick] plot[smooth, domain=2.1:4] (\x, {1.5 + 0.2*(\x-2)});
+
+    % Jump up
+    \fill[blue!70] (2, 1.1) circle (3pt);
+    \draw[blue!70, dashed] (2,1.1) -- (2, 1.7);
+    \fill[white] (2, 1.7) circle (3pt);
+    \draw[blue!70] (2, 1.7) circle (3pt);
+
+    \node[font=\small] at (2, -0.6) {jump up: OK};
+    \node[blue!70] at (3.5, 3) {\small l.s.c.};
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\begin{tikzpicture}[scale=0.55]
+    % Axes
+    \draw[->] (-0.5,0) -- (4.5,0) node[right] {\small $x$};
+    \draw[->] (0,-0.3) -- (0,3.5) node[above] {\small $f$};
+
+    % NOT l.s.c. (jump down)
+    \draw[red!70, very thick] plot[smooth, domain=0:1.9] (\x, {1.5 + 0.3*\x});
+    \draw[red!70, very thick] plot[smooth, domain=2.1:4] (\x, {0.5 + 0.2*(\x-2)});
+
+    % Jump down
+    \fill[white] (2, 2.1) circle (3pt);
+    \draw[red!70] (2, 2.1) circle (3pt);
+    \draw[red!70, dashed] (2,2.1) -- (2, 0.7);
+    \fill[red!70] (2, 0.7) circle (3pt);
+
+    \node[font=\small] at (2, -0.6) {jump down: NOT OK};
+    \node[red!70] at (3.5, 3) {\small not l.s.c.};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\end{columns}
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Exercise 3: l.s.c. Verification}
+\textbf{Problem:} Determine which functions are l.s.c.
+
+\vspace{0.3cm}
+\begin{enumerate}
+    \item[(a)] $f(x) = \begin{cases} x^2 & x \neq 0 \\ 1 & x = 0 \end{cases}$
+
+    \vspace{0.2cm}
+    \item[(b)] $f(x) = \begin{cases} x^2 & x \neq 0 \\ -1 & x = 0 \end{cases}$
+
+    \vspace{0.2cm}
+    \item[(c)] $f(x) = \lceil x \rceil$ (ceiling function)
+
+    \vspace{0.2cm}
+    \item[(d)] $f(x) = \lfloor x \rfloor$ (floor function)
+\end{enumerate}
+
+\vspace{0.3cm}
+\textit{Hint:} For each, check if $f(x_0) \leq \liminf_{x \to x_0} f(x)$ at discontinuities.
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Solution 3}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{(a)} At $x=0$: $\liminf_{x\to 0} x^2 = 0 < 1 = f(0)$
+
+$\Rightarrow$ \textcolor{green!60!black}{\textbf{l.s.c.}} (jump UP at 0)
+
+\vspace{0.3cm}
+\textbf{(b)} At $x=0$: $\liminf_{x\to 0} x^2 = 0 > -1 = f(0)$
+
+$\Rightarrow$ \textcolor{red}{\textbf{NOT l.s.c.}} (jump DOWN at 0)
+
+\vspace{0.3cm}
+\textbf{(c)} $\lceil x \rceil$: At $x=n$, from left: $\lim_{x\to n^-} \lceil x \rceil = n$
+
+From right: $\lim_{x\to n^+} \lceil x \rceil = n+1$
+
+$\Rightarrow$ $\liminf = n = f(n)$ \textcolor{green!60!black}{\textbf{l.s.c.}}
+
+\vspace{0.3cm}
+\textbf{(d)} $\lfloor x \rfloor$: At $x=n$, $\liminf = n-1 < n = f(n)$
+
+$\Rightarrow$ \textcolor{red}{\textbf{NOT l.s.c.}}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.5]
+    % (a) l.s.c.
+    \draw[->] (-1.5,0) -- (1.5,0);
+    \draw[->] (0,-0.3) -- (0,2);
+    \draw[blue!70, thick, domain=-1.2:1.2, samples=50] plot (\x, {\x*\x});
+    \fill[white] (0,0) circle (3pt);
+    \draw[blue!70] (0,0) circle (3pt);
+    \fill[blue!70] (0,1) circle (3pt);
+    \node at (0,-0.8) {\footnotesize (a) l.s.c.};
+\end{tikzpicture}
+\hspace{0.3cm}
+\begin{tikzpicture}[scale=0.5]
+    % (b) not l.s.c.
+    \draw[->] (-1.5,0) -- (1.5,0);
+    \draw[->] (0,-1.3) -- (0,2);
+    \draw[red!70, thick, domain=-1.2:-0.1, samples=30] plot (\x, {\x*\x});
+    \draw[red!70, thick, domain=0.1:1.2, samples=30] plot (\x, {\x*\x});
+    \fill[white] (0,0) circle (3pt);
+    \draw[red!70] (0,0) circle (3pt);
+    \fill[red!70] (0,-1) circle (3pt);
+    \node at (0,-1.8) {\footnotesize (b) not l.s.c.};
+\end{tikzpicture}
+
+\vspace{0.4cm}
+\begin{tikzpicture}[scale=0.45]
+    % Ceiling (l.s.c.)
+    \draw[->] (-0.5,0) -- (3.5,0);
+    \draw[->] (0,-0.3) -- (0,3.5);
+    \foreach \i in {0,1,2} {
+        \draw[blue!70, thick] (\i, \i+1) -- (\i+1, \i+1);
+        \fill[blue!70] (\i, \i+1) circle (2pt);
+        \fill[white] (\i+1, \i+1) circle (2pt);
+        \draw[blue!70] (\i+1, \i+1) circle (2pt);
+    }
+    \node at (1.5,-0.8) {\footnotesize (c) ceiling: l.s.c.};
+\end{tikzpicture}
+\hspace{0.2cm}
+\begin{tikzpicture}[scale=0.45]
+    % Floor (not l.s.c.)
+    \draw[->] (-0.5,0) -- (3.5,0);
+    \draw[->] (0,-0.3) -- (0,3.5);
+    \foreach \i in {0,1,2} {
+        \draw[red!70, thick] (\i, \i) -- (\i+1, \i);
+        \fill[red!70] (\i, \i) circle (2pt);
+        \fill[white] (\i+1, \i) circle (2pt);
+        \draw[red!70] (\i+1, \i) circle (2pt);
+    }
+    \node at (1.5,-0.8) {\footnotesize (d) floor: not l.s.c.};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\end{columns}
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Box 1.2: Weak Compactness in Dual Spaces}
+\textbf{Setting:} $V$ a Banach space, $V^*$ its dual.
+
+\vspace{0.3cm}
+\textbf{Definition (Weak-* convergence):} $\phi_n \stackrel{*}{\rightharpoonup} \phi$ in $V^*$ if
 \[
-\forall \varepsilon > 0, \; \exists K \text{ compact}: \quad \mu_n(X \setminus K) < \varepsilon \quad \forall n
+\langle \phi_n, v \rangle \to \langle \phi, v \rangle \quad \forall v \in V
 \]
 
 \vspace{0.3cm}
-\textbf{Theorem (Prokhorov):} For probability measures on a Polish space:
+\begin{block}{Banach-Alaoglu Theorem}
+The closed unit ball $\{\phi \in V^* : \|\phi\| \leq 1\}$ is \textbf{weak-* compact}.
+\end{block}
+
+\vspace{0.3cm}
+\textbf{Consequence:} Any bounded sequence in $V^*$ has a weak-* convergent subsequence.
+
+\vspace{0.3cm}
+\textbf{Application to OT:} Measures can be viewed as elements of $\Cb(X)^*$.
 \[
-(\mu_n) \text{ is tight} \quad \Leftrightarrow \quad \exists \text{ weakly convergent subsequence}
+\mu_n \text{ bounded } \Rightarrow \exists \text{ weakly convergent subsequence}
 \]
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Box 1.3: Duality Between $C_0$ and $\mathcal{M}$}
+\textbf{Riesz Representation Theorem:}
+
+Let $X$ be a locally compact Hausdorff space.
+
+\vspace{0.3cm}
+\[
+\boxed{\Czero(X)^* \cong \Mm(X)}
+\]
+
+\vspace{0.3cm}
+Every continuous linear functional on $\Czero(X)$ is given by:
+\[
+\Lambda(\phi) = \int_X \phi \, d\mu
+\]
+for a unique $\mu \in \Mm(X)$ (signed finite measure).
+
+\vspace{0.4cm}
+\textbf{Narrow convergence:} $\mu_n \rightharpoonup \mu$ if
+\[
+\int \phi \, d\mu_n \to \int \phi \, d\mu \quad \forall \phi \in \Cb(X)
+\]
+
+\vspace{0.2cm}
+\textbf{Note:} For probability measures, this is the standard weak convergence.
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Box 1.4: Prokhorov Theorem}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{Definition (Tightness):}
+A family $\{\mu_n\} \subset \Pp(X)$ is \textbf{tight} if:
+\[
+\forall \varepsilon > 0, \; \exists K \text{ compact}:
+\]
+\[
+\mu_n(X \setminus K) < \varepsilon \quad \forall n
+\]
+
+\vspace{0.3cm}
+\begin{block}{Prokhorov's Theorem}
+On a Polish space (complete separable metric):
+\[
+\{\mu_n\} \text{ tight} \;\Leftrightarrow\; \exists \text{ weakly conv. subseq.}
+\]
+\end{block}
 
 \vspace{0.3cm}
 \textbf{Key fact:} A single probability measure is always tight.
+
+\textbf{Application:} $\Pi(\mu,\nu)$ is tight if $\mu, \nu$ are tight.
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+    % Compact set K
+    \draw[thick, blue!70] (0,0) ellipse (2 and 1.5);
+    \node[blue!70] at (0,0) {$K$};
+
+    % Outer space
+    \draw[gray, dashed] (0,0) ellipse (3 and 2.2);
+    \node[gray] at (2.5, 2) {$X$};
+
+    % Measures concentrated in K
+    \fill[red!30, opacity=0.5] (0,0) ellipse (1.8 and 1.3);
+
+    % Annotation
+    \node at (0, -2.5) {\small $\mu_n(X \setminus K) < \varepsilon$};
+
+    % Arrow showing small mass outside
+    \draw[-{Stealth}, red!70] (2.2, 0.5) -- (2.7, 0.8);
+    \node[red!70, font=\footnotesize] at (3.2, 0.5) {$< \varepsilon$};
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\textbf{Intuition:}\\
+Mass doesn't escape to infinity
+\end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
-\begin{frame}{Existence Theorem (Compact Case)}
-\textbf{Theorem 1.4:} Let $X, Y$ be \textbf{compact} metric spaces, $\mu \in \Pp(X)$, $\nu \in \Pp(Y)$, and $c: X \times Y \to \R$ \textbf{continuous}. Then (KP) admits a solution.
+\begin{frame}{Exercise 4: Weak Convergence}
+\textbf{Problem:} Let $\mu_n = \frac{1}{n}\sum_{k=1}^{n} \delta_{k/n}$ on $[0,1]$.
+
+\vspace{0.3cm}
+\textbf{Questions:}
+\begin{enumerate}
+    \item[(a)] Show that $\mu_n \rightharpoonup \mu$ weakly, and identify $\mu$.
+    \item[(b)] Compute $\int_0^1 x \, d\mu_n$ and $\int_0^1 x \, d\mu$.
+    \item[(c)] Is the sequence $\{\mu_n\}$ tight?
+\end{enumerate}
+
+\vspace{0.5cm}
+\textit{Hint:} For (a), think about Riemann sums. For (c), note that $[0,1]$ is compact.
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Solution 4}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{(a)} For any $\phi \in C([0,1])$:
+\[
+\int \phi \, d\mu_n = \frac{1}{n}\sum_{k=1}^n \phi(k/n)
+\]
+This is a Riemann sum! As $n \to \infty$:
+\[
+\frac{1}{n}\sum_{k=1}^n \phi(k/n) \to \int_0^1 \phi(x) \, dx
+\]
+
+$\Rightarrow$ $\mu_n \rightharpoonup \Ld|_{[0,1]}$ (uniform/Lebesgue measure)
+
+\vspace{0.3cm}
+\textbf{(b)} $\int_0^1 x \, d\mu_n = \frac{1}{n}\sum_{k=1}^n \frac{k}{n} = \frac{n+1}{2n} \to \frac{1}{2}$
+
+$\int_0^1 x \, dx = \frac{1}{2}$ \quad $\checkmark$
+
+\vspace{0.2cm}
+\textbf{(c)} Yes! All $\mu_n$ supported on $[0,1]$, which is compact.
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+    % n = 4
+    \draw[->] (-0.3,0) -- (4.5,0) node[right] {\small $x$};
+    \draw[->] (0,-0.3) -- (0,2.5);
+
+    % Dirac masses
+    \foreach \k in {1,2,3,4} {
+        \fill[blue!70] (\k, 0) circle (3pt);
+        \draw[-{Stealth}, blue!70, thick] (\k, 0) -- (\k, 1.5);
+    }
+    \node[font=\footnotesize] at (2, -0.6) {$\mu_4 = \frac{1}{4}\sum \delta_{k/4}$};
+
+    % Labels
+    \node[font=\tiny] at (1, -0.3) {$\frac{1}{4}$};
+    \node[font=\tiny] at (2, -0.3) {$\frac{1}{2}$};
+    \node[font=\tiny] at (3, -0.3) {$\frac{3}{4}$};
+    \node[font=\tiny] at (4, -0.3) {$1$};
+\end{tikzpicture}
+
+\vspace{0.3cm}
+$\downarrow$ as $n \to \infty$
+
+\vspace{0.2cm}
+\begin{tikzpicture}[scale=0.6]
+    % Lebesgue
+    \draw[->] (-0.3,0) -- (4.5,0) node[right] {\small $x$};
+    \draw[->] (0,-0.3) -- (0,2.5);
+
+    % Uniform density
+    \fill[red!30, opacity=0.5] (0,0) rectangle (4, 1.5);
+    \draw[red!70, thick] (0, 1.5) -- (4, 1.5);
+    \draw[red!70, thick] (0, 0) -- (0, 1.5);
+    \draw[red!70, thick] (4, 0) -- (4, 1.5);
+
+    \node[font=\footnotesize] at (2, -0.6) {$\mu = \Ld|_{[0,1]}$ (uniform)};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\end{columns}
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Box 1.5: l.s.c. as Suprema of Lipschitz Functions}
+\textbf{Theorem:} If $f: X \to \R \cup \{+\infty\}$ is l.s.c. and bounded below, then:
+\[
+f(x) = \sup \{ g(x) : g \leq f, \; g \text{ Lipschitz} \}
+\]
+
+\vspace{0.3cm}
+\textbf{Consequence:} If $\mu_n \rightharpoonup \mu$ and $f$ is l.s.c., then:
+\[
+\int f \, d\mu \leq \liminf_{n \to \infty} \int f \, d\mu_n
+\]
+
+\vspace{0.3cm}
+\textbf{Application to OT:}
+\begin{itemize}
+    \item If cost $c$ is l.s.c., then $K(\gamma) = \int c \, d\gamma$ is l.s.c. in $\gamma$
+    \item Combined with compactness $\Rightarrow$ existence of optimal plan
+\end{itemize}
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Box 1.6: Lusin's Theorem}
+\textbf{Theorem (Lusin):} Let $\mu$ be a finite measure on $X$ and $f: X \to \R$ measurable.
+
+For every $\varepsilon > 0$, there exists $K \subset X$ compact such that:
+\begin{enumerate}
+    \item $\mu(X \setminus K) < \varepsilon$
+    \item $f|_K$ is continuous
+\end{enumerate}
 
 \vspace{0.4cm}
+\textbf{Interpretation:} Every measurable function is ``almost continuous.''
+
+\vspace{0.4cm}
+\textbf{Strong Lusin:} Given $\varepsilon > 0$, there exists $g \in C_c(X)$ with:
+\[
+\mu(\{x : f(x) \neq g(x)\}) < \varepsilon
+\]
+
+\vspace{0.3cm}
+\textbf{Use in OT:} Approximating transport maps by continuous maps.
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Existence Theorem: Compact Case}
+\begin{block}{Theorem 1.4}
+Let $X, Y$ be \textbf{compact} metric spaces, $\mu \in \Pp(X)$, $\nu \in \Pp(Y)$, and $c: X \times Y \to \R$ \textbf{continuous}. Then (KP) admits a solution.
+\end{block}
+
+\vspace{0.3cm}
 \textbf{Proof:}
 \begin{enumerate}
+    \item \textbf{$\Pi(\mu,\nu)$ is non-empty:} $\mu \otimes \nu \in \Pi(\mu,\nu)$ \checkmark
+
     \item \textbf{$\Pi(\mu,\nu)$ is compact:}
     \begin{itemize}
-        \item $\gamma_n \in \Pi(\mu,\nu)$ are probability measures, hence bounded
-        \item By Banach-Alaoglu: $\gamma_{n_k} \rightharpoonup \gamma$
-        \item Marginal constraints preserved: $(\pi_x)_\# \gamma = \mu$, $(\pi_y)_\# \gamma = \nu$
+        \item Bounded (probability measures)
+        \item Closed under weak convergence (marginals preserved)
+        \item By Prokhorov: weakly compact
     \end{itemize}
 
-    \vspace{0.2cm}
-    \item \textbf{$K(\gamma) = \int c \, d\gamma$ is continuous:}
+    \item \textbf{$K(\gamma)$ is continuous:}
     \begin{itemize}
-        \item $c$ continuous $\Rightarrow$ $\gamma_n \rightharpoonup \gamma$ implies $\int c \, d\gamma_n \to \int c \, d\gamma$
+        \item $c$ continuous, $\gamma_n \rightharpoonup \gamma$ $\Rightarrow$ $\int c \, d\gamma_n \to \int c \, d\gamma$
     \end{itemize}
 
-    \vspace{0.2cm}
-    \item Apply Weierstrass theorem.
+    \item Apply Weierstrass theorem $\Rightarrow$ minimum exists. \quad $\square$
 \end{enumerate}
 \end{frame}
 
 %==============================================================================
 \begin{frame}{Existence: General Case}
-\textbf{Lemma 1.6:} If $f: X \to \R \cup \{+\infty\}$ is l.s.c. and bounded below, then
-\[
-J(\mu) := \int f \, d\mu \quad \text{is l.s.c. for weak convergence of measures}
-\]
+\begin{block}{Lemma 1.6}
+If $f: X \to \R \cup \{+\infty\}$ is l.s.c. and bounded below, then
+$J(\mu) := \int f \, d\mu$ is l.s.c. for weak convergence.
+\end{block}
 
 \vspace{0.3cm}
-\textbf{Theorem 1.5:} $X, Y$ compact, $c$ \textbf{l.s.c.} $\Rightarrow$ (KP) has a solution.
+\begin{block}{Theorem 1.5}
+$X, Y$ compact, $c$ \textbf{l.s.c.} $\Rightarrow$ (KP) has a solution.
+\end{block}
 
 \vspace{0.3cm}
-\textbf{Theorem 1.7:} $X, Y$ \textbf{Polish} (complete separable metric), $c: X \times Y \to [0, +\infty]$ l.s.c. $\Rightarrow$ (KP) has a solution.
+\begin{block}{Theorem 1.7}
+$X, Y$ \textbf{Polish}, $c: X \times Y \to [0, +\infty]$ l.s.c. $\Rightarrow$ (KP) has a solution.
+\end{block}
 
 \vspace{0.3cm}
 \textbf{Proof idea for Theorem 1.7:}
 \begin{itemize}
-    \item Tightness of $(\gamma_n) \subset \Pi(\mu,\nu)$:
-    \[
-    \gamma_n((X \times Y) \setminus (K_X \times K_Y)) \leq \mu(X \setminus K_X) + \nu(Y \setminus K_Y) < \varepsilon
-    \]
-    \item Apply Prokhorov $\Rightarrow$ weak compactness
-    \item Apply Lemma 1.6 $\Rightarrow$ l.s.c. of $K$
+    \item $\gamma_n \in \Pi(\mu,\nu)$ tight because $\mu, \nu$ tight
+    \item Prokhorov $\Rightarrow$ weak compactness
+    \item Lemma 1.6 $\Rightarrow$ l.s.c. of $K(\gamma)$
+    \item Weierstrass $\Rightarrow$ minimum exists
 \end{itemize}
 \end{frame}
 
 %==============================================================================
-\begin{frame}{Exercise 2: Product Measure is a Transport Plan}
-\textbf{Problem:} Show that $\mu \otimes \nu \in \Pi(\mu, \nu)$ for any $\mu \in \Pp(X)$, $\nu \in \Pp(Y)$.
-
-\vspace{0.5cm}
-\textit{Recall:} The product measure satisfies
-\[
-(\mu \otimes \nu)(A \times B) = \mu(A) \cdot \nu(B)
-\]
-
-\vspace{0.5cm}
-\textit{Hint:} Verify the marginal conditions:
-\begin{itemize}
-    \item $(\pi_x)_\# (\mu \otimes \nu) = \mu$
-    \item $(\pi_y)_\# (\mu \otimes \nu) = \nu$
-\end{itemize}
+\begin{frame}{Exercise 5: Existence Check}
+\textbf{Problem:} For each case, determine if (KP) has a solution.
 
 \vspace{0.3cm}
-\textit{Use:} For any test function $\phi \in \Cb(X)$:
-\[
-\int_{X \times Y} \phi(x) \, d(\mu \otimes \nu)(x,y) = \int_X \phi(x) \, d\mu(x) \cdot \int_Y d\nu(y)
-\]
+\begin{enumerate}
+    \item[(a)] $X = Y = [0,1]$, $c(x,y) = |x-y|^2$, $\mu = \nu = \Ld|_{[0,1]}$
+
+    \vspace{0.2cm}
+    \item[(b)] $X = Y = \R$, $c(x,y) = |x-y|$, $\mu = \nu = \mathcal{N}(0,1)$ (Gaussian)
+
+    \vspace{0.2cm}
+    \item[(c)] $X = Y = (0,1)$ (open interval), $c(x,y) = \frac{1}{|x-y|}$, $\mu = \nu = \Ld|_{(0,1)}$
+
+    \vspace{0.2cm}
+    \item[(d)] $X = Y = \R$, $c(x,y) = e^{-|x-y|}$, $\mu = \delta_0$, $\nu = \mathcal{N}(0,1)$
+\end{enumerate}
+
+\vspace{0.3cm}
+\textit{For each:} Check compactness of spaces, l.s.c. of cost, and apply theorems.
 \end{frame}
 
 %==============================================================================
-\begin{frame}{Solution 2}
-\textbf{Verify first marginal:} For any $\phi \in \Cb(X)$:
-\begin{align*}
-\int_X \phi \, d\bigl((\pi_x)_\# (\mu \otimes \nu)\bigr) &= \int_{X \times Y} \phi(\pi_x(x,y)) \, d(\mu \otimes \nu) \\
-&= \int_{X \times Y} \phi(x) \, d(\mu \otimes \nu) \\
-&= \int_X \phi(x) \, d\mu(x) \cdot \underbrace{\int_Y d\nu(y)}_{= 1} \\
-&= \int_X \phi \, d\mu
-\end{align*}
+\begin{frame}{Solution 5}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{(a)} $[0,1]$ compact, $|x-y|^2$ continuous
 
-Hence $(\pi_x)_\# (\mu \otimes \nu) = \mu$. Similarly for the second marginal.
+$\Rightarrow$ \textcolor{green!60!black}{\textbf{Exists}} (Theorem 1.4)
 
 \vspace{0.3cm}
-\textbf{Conclusion:} $\Pi(\mu, \nu) \neq \emptyset$ for any $\mu, \nu$.
+\textbf{(b)} $\R$ Polish (not compact), $|x-y|$ continuous (l.s.c.)
+
+Gaussians are tight.
+
+$\Rightarrow$ \textcolor{green!60!black}{\textbf{Exists}} (Theorem 1.7)
+
+\vspace{0.3cm}
+\textbf{(c)} $(0,1)$ Polish, but $c = 1/|x-y|$ is \textbf{not l.s.c.}!
+
+As $x \to y$, $c \to +\infty$ (upper semi-continuous).
+
+$\Rightarrow$ \textcolor{red}{\textbf{May not exist}} (conditions not met)
+
+\vspace{0.3cm}
+\textbf{(d)} $\R$ Polish, $e^{-|x-y|}$ continuous (bounded).
+
+$\Rightarrow$ \textcolor{green!60!black}{\textbf{Exists}} (Theorem 1.7)
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\textbf{Existence Checklist}
 
 \vspace{0.2cm}
-\textbf{Note:} $\mu \otimes \nu$ is the ``independent coupling'' - usually \emph{not} optimal!
+\begin{tikzpicture}[scale=0.6]
+    % Checklist
+    \node[anchor=west] at (0, 3) {$\checkmark$ Spaces Polish?};
+    \node[anchor=west] at (0, 2) {$\checkmark$ Cost l.s.c.?};
+    \node[anchor=west] at (0, 1) {$\checkmark$ Measures tight?};
+
+    % Arrow
+    \draw[-{Stealth}, thick] (2, 0.5) -- (2, -0.5);
+
+    \node[anchor=west, green!60!black, font=\bfseries] at (0, -1) {$\Rightarrow$ Solution exists!};
+
+    % Box
+    \draw[thick, rounded corners] (-0.3, -1.5) rectangle (4.5, 3.5);
+\end{tikzpicture}
+
+\vspace{0.4cm}
+\textbf{Case (c) fails:}\\
+$c(x,y) = \frac{1}{|x-y|}$ is \textbf{u.s.c.}, not l.s.c.!
+
+Standard existence theory doesn't apply.
+\end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
@@ -603,37 +1356,39 @@ Hence $(\pi_x)_\# (\mu \otimes \nu) = \mu$. Similarly for the second marginal.
     \item Constraints: marginals are linear in $\gamma$
 \end{itemize}
 
-\vspace{0.3cm}
-\textbf{Duality} provides:
-\begin{itemize}
-    \item Lower bounds on the optimal value
-    \item Optimality conditions
-    \item Alternative formulation (often useful computationally)
-\end{itemize}
+\vspace{0.4cm}
+\textbf{Duality theory} provides:
+\begin{enumerate}
+    \item \textbf{Lower bounds} on the optimal value
+    \item \textbf{Optimality conditions} (complementary slackness)
+    \item \textbf{Alternative formulation} (often computationally useful)
+    \item \textbf{Economic interpretation} (prices, equilibrium)
+\end{enumerate}
 
-\vspace{0.3cm}
-\textbf{Question:} What is the ``dual'' of (KP)?
+\vspace{0.4cm}
+\textbf{Key question:} What is the ``dual'' problem to (KP)?
 \end{frame}
 
 %==============================================================================
 \begin{frame}{Deriving the Dual Problem}
-\textbf{Observation:} $\gamma \in \Pi(\mu, \nu)$ if and only if
-\[
-\sup_{\phi, \psi} \left[ \int_X \phi \, d\mu + \int_Y \psi \, d\nu - \int_{X \times Y} (\phi(x) + \psi(y)) \, d\gamma \right] = 0
-\]
+\textbf{Key observation:} $\gamma \in \Pi(\mu, \nu)$ iff marginal constraints hold.
 
-(If constraints satisfied $\Rightarrow 0$; otherwise $\Rightarrow +\infty$)
+Encode constraints using Lagrange multipliers $\phi, \psi$:
+\[
+\sup_{\phi, \psi} \left[ \int_X \phi \, d\mu + \int_Y \psi \, d\nu - \int_{X \times Y} (\phi(x) + \psi(y)) \, d\gamma \right]
+= \begin{cases} 0 & \gamma \in \Pi(\mu,\nu) \\ +\infty & \text{otherwise} \end{cases}
+\]
 
 \vspace{0.3cm}
 \textbf{Rewrite (KP):}
 \[
-\min_\gamma \int c \, d\gamma + \sup_{\phi,\psi} \left[ \int \phi \, d\mu + \int \psi \, d\nu - \int (\phi + \psi) \, d\gamma \right]
+\min_\gamma \left[ \int c \, d\gamma + \sup_{\phi,\psi} \left( \int \phi \, d\mu + \int \psi \, d\nu - \int (\phi + \psi) \, d\gamma \right) \right]
 \]
 
 \vspace{0.3cm}
-\textbf{Interchange min and sup} (needs justification!):
+\textbf{Interchange min and sup} (minimax theorem):
 \[
-\sup_{\phi,\psi} \left[ \int \phi \, d\mu + \int \psi \, d\nu + \inf_\gamma \int (c - \phi - \psi) \, d\gamma \right]
+= \sup_{\phi,\psi} \left[ \int \phi \, d\mu + \int \psi \, d\nu + \underbrace{\inf_\gamma \int (c - \phi - \psi) \, d\gamma}_{=0 \text{ if } \phi+\psi \leq c, \; -\infty \text{ else}} \right]
 \]
 \end{frame}
 
@@ -641,7 +1396,7 @@ Hence $(\pi_x)_\# (\mu \otimes \nu) = \mu$. Similarly for the second marginal.
 \begin{frame}{The Dual Problem (DP)}
 The inner $\inf_\gamma$ equals:
 \[
-\inf_\gamma \int (c(x,y) - \phi(x) - \psi(y)) \, d\gamma =
+\inf_{\gamma \geq 0} \int (c(x,y) - \phi(x) - \psi(y)) \, d\gamma =
 \begin{cases}
 0 & \text{if } \phi(x) + \psi(y) \leq c(x,y) \; \forall x,y \\
 -\infty & \text{otherwise}
@@ -649,40 +1404,203 @@ The inner $\inf_\gamma$ equals:
 \]
 
 \vspace{0.3cm}
-\textbf{Dual Problem:}
 \[
-\textbf{(DP)} \quad \sup \left\{ \int_X \phi \, d\mu + \int_Y \psi \, d\nu \;:\; \underbrace{\phi(x) + \psi(y) \leq c(x,y)}_{\text{admissibility}} \right\}
+\boxed{\textbf{(DP)} \quad \sup \left\{ \int_X \underbrace{\phi \, d\mu}_{\text{pay at source}} + \int_Y \underbrace{\psi \, d\nu}_{\text{receive at target}} \;:\; \underbrace{\phi(x) + \psi(y) \leq c(x,y)}_{\text{no arbitrage}} \right\}}
 \]
 
-\vspace{0.3cm}
-\textbf{Interpretation:}
+\vspace{0.4cm}
+\textbf{Economic interpretation:}
 \begin{itemize}
-    \item $\phi(x)$: ``price'' paid at source $x$
-    \item $\psi(y)$: ``price'' received at destination $y$
-    \item Constraint: profit $\leq$ transport cost
+    \item $\phi(x)$: price paid to pick up goods at $x$
+    \item $\psi(y)$: price received for delivering goods at $y$
+    \item Constraint: profit $\phi(x) + \psi(y) \leq$ transport cost $c(x,y)$
 \end{itemize}
 \end{frame}
 
 %==============================================================================
-\begin{frame}{Duality Result}
-\textbf{Theorem (Kantorovich Duality):}
+\begin{frame}{Duality Visualization}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{Primal (KP):}
+\begin{itemize}
+    \item Variables: transport plan $\gamma$
+    \item Minimize total cost
+    \item Constraints: marginals
+\end{itemize}
+
+\vspace{0.5cm}
+\textbf{Dual (DP):}
+\begin{itemize}
+    \item Variables: potentials $\phi, \psi$
+    \item Maximize total revenue
+    \item Constraints: $\phi + \psi \leq c$
+\end{itemize}
+
+\vspace{0.5cm}
+\textbf{At optimum:}
 \[
-\min_{\gamma \in \Pi(\mu,\nu)} \int c \, d\gamma = \sup_{\phi + \psi \leq c} \left( \int \phi \, d\mu + \int \psi \, d\nu \right)
+\min(\text{KP}) = \max(\text{DP})
 \]
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+    % Primal
+    \draw[blue!70, thick, fill=blue!10] (0,0) ellipse (1.5 and 1);
+    \node at (0,0) {\small $\Pi(\mu,\nu)$};
+    \node[blue!70] at (0, -1.5) {\small Primal};
+
+    % Dual
+    \draw[red!70, thick, fill=red!10] (5,0) ellipse (1.5 and 1);
+    \node at (5,0) {\small $\phi+\psi \leq c$};
+    \node[red!70] at (5, -1.5) {\small Dual};
+
+    % Connection
+    \draw[<->, thick, purple!70] (1.7, 0) -- node[above] {\small duality} (3.3, 0);
+
+    % Optimal points
+    \fill[blue!70] (0.5, 0.3) circle (3pt);
+    \node[font=\tiny, above] at (0.5, 0.4) {$\gamma^*$};
+
+    \fill[red!70] (4.5, -0.2) circle (3pt);
+    \node[font=\tiny, below] at (4.5, -0.3) {$(\phi^*, \psi^*)$};
+
+    % Values
+    \node at (2.5, -2.5) {$K(\gamma^*) = \int \phi^* d\mu + \int \psi^* d\nu$};
+\end{tikzpicture}
+
+\vspace{0.5cm}
+\textbf{Complementary slackness:}\\
+$\gamma^*$-a.e.: $\phi^*(x) + \psi^*(y) = c(x,y)$
+\end{center}
+\end{column}
+\end{columns}
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Kantorovich Duality Theorem}
+\begin{block}{Theorem (Kantorovich Duality)}
+Under mild conditions:
+\[
+\boxed{\min_{\gamma \in \Pi(\mu,\nu)} \int c \, d\gamma = \sup_{\phi + \psi \leq c} \left( \int \phi \, d\mu + \int \psi \, d\nu \right)}
+\]
+\end{block}
 
 \vspace{0.3cm}
 \textbf{Key points:}
 \begin{itemize}
-    \item Weak duality ($\geq$) is easy
-    \item Strong duality ($=$) requires proof (via cyclical monotonicity or convex analysis)
-    \item The supremum is attained under mild conditions
+    \item \textbf{Weak duality} ($\geq$): Easy to prove
+    \item \textbf{Strong duality} ($=$): Requires proof (minimax or convex analysis)
+    \item The supremum is often attained (under regularity of $c$)
 \end{itemize}
 
 \vspace{0.3cm}
-\textbf{Optimality conditions:} $\gamma$ optimal and $(\phi, \psi)$ optimal $\Leftrightarrow$
+\textbf{Optimality conditions:} $(\gamma^*, \phi^*, \psi^*)$ optimal iff:
 \[
-\phi(x) + \psi(y) = c(x,y) \quad \gamma\text{-a.e.}
+\phi^*(x) + \psi^*(y) = c(x,y) \quad \gamma^*\text{-almost everywhere}
 \]
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Exercise 6: Dual Problem Computation}
+\textbf{Problem:} Consider $X = Y = \{0, 1\}$ with:
+\[
+\mu = \frac{1}{2}\delta_0 + \frac{1}{2}\delta_1, \quad \nu = \frac{1}{2}\delta_0 + \frac{1}{2}\delta_1, \quad c(x,y) = |x-y|
+\]
+
+\vspace{0.3cm}
+\textbf{Questions:}
+\begin{enumerate}
+    \item[(a)] Write out the primal problem (KP) as a linear program.
+    \item[(b)] Write out the dual problem (DP).
+    \item[(c)] Find the optimal primal and dual solutions.
+    \item[(d)] Verify strong duality and complementary slackness.
+\end{enumerate}
+
+\vspace{0.3cm}
+\textit{Hint:} The cost matrix is $C = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$.
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Solution 6}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{(a) Primal:}
+\[
+\min \gamma_{01} + \gamma_{10}
+\]
+subject to marginal constraints.
+
+\vspace{0.2cm}
+\textbf{(b) Dual:}
+\[
+\max \frac{1}{2}(\phi_0 + \phi_1 + \psi_0 + \psi_1)
+\]
+s.t. $\phi_x + \psi_y \leq c(x,y)$ for all $x,y$.
+
+\vspace{0.2cm}
+\textbf{(c) Solutions:}
+
+Primal: $\gamma^* = \begin{pmatrix} 1/2 & 0 \\ 0 & 1/2 \end{pmatrix}$, cost $= 0$
+
+Dual: $\phi^* = (0, 0)$, $\psi^* = (0, 0)$, value $= 0$
+
+\vspace{0.2cm}
+\textbf{(d)} Strong duality: $0 = 0$ \checkmark
+
+Complementary slackness: $\gamma^*$ supported on $\{(0,0), (1,1)\}$ where $\phi^* + \psi^* = c = 0$ \checkmark
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+    % Cost surface
+    \draw[-{Stealth}] (0,0) -- (4,0) node[right] {\small $x$};
+    \draw[-{Stealth}] (0,0) -- (0,4) node[above] {\small $y$};
+
+    % Cost values
+    \node at (1, 1) {$0$};
+    \node at (3, 1) {$1$};
+    \node at (1, 3) {$1$};
+    \node at (3, 3) {$0$};
+
+    % Grid
+    \draw[gray, dashed] (0,2) -- (4,2);
+    \draw[gray, dashed] (2,0) -- (2,4);
+
+    % Labels
+    \node[below] at (1, 0) {\small $0$};
+    \node[below] at (3, 0) {\small $1$};
+    \node[left] at (0, 1) {\small $0$};
+    \node[left] at (0, 3) {\small $1$};
+
+    % Optimal plan
+    \fill[green!60!black] (1, 1) circle (6pt);
+    \fill[green!60!black] (3, 3) circle (6pt);
+
+    \node at (2, -1) {\small optimal: diagonal};
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\begin{tikzpicture}[scale=0.5]
+    % Dual constraint visualization
+    \draw[->] (-0.5,0) -- (4,0) node[right] {\small $x$};
+    \draw[->] (0,-0.5) -- (0,2.5) node[above] {\small potential};
+
+    % phi
+    \draw[blue!70, thick] (0.5, 0) -- (0.5, 0);
+    \draw[blue!70, thick] (3, 0) -- (3, 0);
+    \fill[blue!70] (0.5, 0) circle (3pt);
+    \fill[blue!70] (3, 0) circle (3pt);
+    \node[blue!70, font=\footnotesize] at (1.75, 0.5) {$\phi^* = 0$};
+
+    % psi
+    \fill[red!70] (0.5, 0) circle (2pt);
+    \fill[red!70] (3, 0) circle (2pt);
+    \node[red!70, font=\footnotesize] at (1.75, -0.5) {$\psi^* = 0$};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
@@ -692,30 +1610,32 @@ The inner $\inf_\gamma$ equals:
 \begin{frame}{Summary}
 \textbf{Monge Problem (MP):}
 \begin{itemize}
-    \item Transport via maps $T: X \to Y$
-    \item Constraint $T_\# \mu = \nu$ is nonlinear, may have no solution
+    \item Transport via maps $T: X \to Y$ with $T_\# \mu = \nu$
+    \item Nonlinear constraint, may have no solution (mass can't split)
 \end{itemize}
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 \textbf{Kantorovich Problem (KP):}
 \begin{itemize}
     \item Transport via plans $\gamma \in \Pi(\mu, \nu)$
-    \item Linear programming, always has a solution
-    \item Relaxation of (MP)
+    \item Linear programming, always has solution (relaxation of MP)
 \end{itemize}
 
-\vspace{0.3cm}
-\textbf{Existence:}
+\vspace{0.2cm}
+\textbf{Existence Theory:}
 \begin{itemize}
-    \item Weierstrass + weak compactness + l.s.c.
-    \item Works for Polish spaces, l.s.c. costs
+    \item Weierstrass + weak compactness + l.s.c. $\Rightarrow$ existence
+    \item Works for Polish spaces with l.s.c. costs
 \end{itemize}
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 \textbf{Duality:}
 \[
-\min(\text{KP}) = \sup(\text{DP}) = \sup_{\phi + \psi \leq c} \left( \int \phi \, d\mu + \int \psi \, d\nu \right)
+\min_{\gamma \in \Pi(\mu,\nu)} \int c \, d\gamma = \sup_{\phi + \psi \leq c} \left( \int \phi \, d\mu + \int \psi \, d\nu \right)
 \]
+
+\vspace{0.2cm}
+\textbf{Key Memo Boxes:} Weierstrass, Banach-Alaoglu, Riesz, Prokhorov, l.s.c. approximation, Lusin
 \end{frame}
 
 \end{document}

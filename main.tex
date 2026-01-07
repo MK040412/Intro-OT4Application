@@ -9,7 +9,7 @@
 \usepackage{mathtools}
 \usepackage{bm}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,calc}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.markings}
 
 % Custom commands
 \newcommand{\R}{\mathbb{R}}
@@ -513,15 +513,17 @@ W_1(\mu,\nu) = \int |x-y|\,d\gamma = \frac{1}{2}|0-(-1)| + \frac{1}{2}|0-1| = \f
 %==============================================================================
 
 \begin{frame}{Gradient Flows in Wasserstein Space}
+\begin{columns}
+\begin{column}{0.55\textwidth}
 \textbf{Key insight:} Many PDEs are gradient flows in $(\mathcal{P}_2, W_2)$.
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 \textbf{Gradient flow} of functional $\mathcal{F}$:
 \[
 \partial_t \rho = -\text{grad}_{W_2} \mathcal{F}(\rho)
 \]
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 \textbf{Example: Heat equation}
 \[
 \partial_t \rho = \Delta \rho
@@ -531,36 +533,146 @@ is the gradient flow of the \textbf{entropy}:
 \mathcal{F}(\rho) = \int_{\R^d} \underbrace{\rho(x) \log \rho(x)}_{\text{entropy density}} \, dx
 \]
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 \textbf{Other examples:}
 \begin{itemize}
     \item Porous medium: $\mathcal{F}(\rho) = \frac{1}{m-1}\int \rho^m$
     \item Fokker-Planck: $\mathcal{F}(\rho) = \int \rho \log \rho + \int V \rho$
 \end{itemize}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.55]
+    % Energy surface (contour lines)
+    \foreach \r in {0.6, 1.2, 1.8, 2.4} {
+        \draw[gray!50] (0,0) ellipse ({\r} and {\r*0.6});
+    }
+
+    % Gradient flow path
+    \draw[blue!70, very thick,
+        decoration={markings, mark=at position 0.3 with {\arrow{Stealth}},
+                              mark=at position 0.6 with {\arrow{Stealth}},
+                              mark=at position 0.9 with {\arrow{Stealth}}},
+        postaction={decorate}]
+        (2.2, 0.8) .. controls (1.5, 0.5) and (1, 0.2) .. (0.3, 0.1) .. controls (0.1, 0.05) .. (0,0);
+
+    % Points on trajectory
+    \fill[blue!70] (2.2, 0.8) circle (3pt) node[above right, font=\small] {$\rho_0$};
+    \fill[blue!70] (1.2, 0.35) circle (2.5pt) node[above, font=\small] {$\rho_t$};
+    \fill[red!70] (0,0) circle (3pt) node[below, font=\small] {$\rho_\infty$};
+
+    % Labels
+    \node at (2.5, -1.2) {\small $\mathcal{F}$ decreasing};
+    \node[gray] at (-2.2, 1.5) {\small level sets of $\mathcal{F}$};
+
+    % Gradient arrow
+    \draw[-{Stealth}, red!70, thick] (1.2, 0.35) -- (0.5, 0.1);
+    \node[red!70, font=\footnotesize] at (1.3, -0.2) {$-\nabla_{W_2}\mathcal{F}$};
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\begin{tikzpicture}[scale=0.4]
+    % Time evolution of density
+    \draw[->] (-0.5,0) -- (9,0) node[right] {\small $x$};
+
+    % Initial (peaked)
+    \draw[blue!70, thick] plot[smooth, domain=-0.3:2.3] (\x, {2*exp(-3*(\x-1)^2)});
+    \node[blue!70, font=\footnotesize] at (1, 2.3) {$t=0$};
+
+    % Intermediate
+    \draw[purple!70, thick] plot[smooth, domain=2.5:5.5] (\x, {1.2*exp(-1*(\x-4)^2)});
+    \node[purple!70, font=\footnotesize] at (4, 1.5) {$t>0$};
+
+    % Final (spread)
+    \draw[red!70, thick] plot[smooth, domain=5.7:8.7] (\x, {0.6*exp(-0.3*(\x-7.2)^2)});
+    \node[red!70, font=\footnotesize] at (7.2, 0.9) {$t\to\infty$};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
 \begin{frame}{JKO Scheme}
+\begin{columns}
+\begin{column}{0.55\textwidth}
 \textbf{Jordan-Kinderlehrer-Otto (1998):} Discrete-time approximation.
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 \[
 \rho^{n+1} = \arg\min_\rho \left\{ \underbrace{\frac{1}{2\tau} W_2^2(\rho, \rho^n)}_{\text{stay close to } \rho^n} + \underbrace{\mathcal{F}(\rho)}_{\text{minimize energy}} \right\}
 \]
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 As $\tau \to 0$:
 \[
 \rho^n \longrightarrow \rho(n\tau) \quad \text{solving } \partial_t \rho = -\text{grad}_{W_2}\mathcal{F}
 \]
 
-\vspace{0.5cm}
+\vspace{0.3cm}
 \textbf{Applications:}
 \begin{itemize}
     \item Existence proofs for PDEs
     \item Numerical schemes
     \item Stability and uniqueness results
 \end{itemize}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.5]
+    % Energy landscape (contour)
+    \foreach \r in {0.8, 1.5, 2.2, 2.9} {
+        \draw[gray!40] (0,-0.5) ellipse ({\r} and {\r*0.5});
+    }
+
+    % Discrete steps
+    \fill[blue!70] (2.8, 0.7) circle (4pt);
+    \node[above, font=\small, blue!70] at (2.8, 0.8) {$\rho^0$};
+
+    \fill[blue!70] (2.0, 0.3) circle (4pt);
+    \node[above right, font=\small, blue!70] at (2.0, 0.35) {$\rho^1$};
+
+    \fill[blue!70] (1.3, 0) circle (4pt);
+    \node[above, font=\small, blue!70] at (1.3, 0.1) {$\rho^2$};
+
+    \fill[blue!70] (0.7, -0.2) circle (4pt);
+    \node[below, font=\small, blue!70] at (0.7, -0.3) {$\rho^3$};
+
+    \fill[red!70] (0, -0.5) circle (4pt);
+    \node[below, font=\small, red!70] at (0, -0.6) {$\rho^\infty$};
+
+    % Arrows between steps
+    \draw[-{Stealth}, thick, blue!50] (2.65, 0.6) -- (2.15, 0.38);
+    \draw[-{Stealth}, thick, blue!50] (1.85, 0.25) -- (1.45, 0.05);
+    \draw[-{Stealth}, thick, blue!50] (1.15, -0.05) -- (0.85, -0.15);
+    \draw[-{Stealth}, thick, blue!50] (0.55, -0.25) -- (0.15, -0.45);
+
+    % Time step annotation
+    \node at (2.5, -0.3) {\footnotesize $\tau$};
+    \node at (1.7, -0.4) {\footnotesize $\tau$};
+
+    \node at (0, -1.8) {\small implicit Euler in $W_2$};
+\end{tikzpicture}
+
+\vspace{0.2cm}
+\begin{tikzpicture}[scale=0.45]
+    % Energy vs iteration
+    \draw[->] (0,0) -- (6,0) node[right] {\small $n$};
+    \draw[->] (0,0) -- (0,3) node[above] {\small $\mathcal{F}(\rho^n)$};
+
+    % Energy decay
+    \draw[blue!70, very thick] plot[smooth] coordinates {(0,2.5) (1,1.8) (2,1.3) (3,1) (4,0.8) (5,0.7)};
+
+    % Points
+    \foreach \x/\y in {0/2.5, 1/1.8, 2/1.3, 3/1, 4/0.8, 5/0.7} {
+        \fill[blue!70] (\x, \y) circle (2.5pt);
+    }
+
+    \node[font=\footnotesize] at (3, -0.6) {energy decreases};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
@@ -568,9 +680,11 @@ As $\tau \to 0$:
 %==============================================================================
 
 \begin{frame}{Entropy and Ricci Curvature}
+\begin{columns}
+\begin{column}{0.55\textwidth}
 \textbf{Remarkable connection} (Lott-Villani, Sturm, 2006-2009):
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 On a Riemannian manifold $(M,g)$:
 \[
 \underbrace{E(\rho) = \int \rho \log \rho}_{\text{entropy}} \text{ is geodesically convex in } W_2
@@ -582,14 +696,73 @@ On a Riemannian manifold $(M,g)$:
 \text{Ricci curvature} \geq 0
 \]
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 \textbf{Synthetic Ricci curvature:} For metric measure spaces $(X,d,m)$:
 \[
-\text{Ric} \geq K \quad \Leftrightarrow \quad \text{Entropy is } K\text{-convex along } W_2\text{-geodesics}
+\text{Ric} \geq K \;\Leftrightarrow\; E \text{ is } K\text{-convex along geodesics}
 \]
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 This extends curvature bounds to \textbf{non-smooth spaces}.
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{center}
+\textbf{Geodesic Convexity}
+
+\vspace{0.2cm}
+\begin{tikzpicture}[scale=0.55]
+    % Convex curve
+    \draw[->] (0,0) -- (5,0) node[right] {\small $t$};
+    \draw[->] (0,0) -- (0,3.5) node[above] {\small $E(\mu_t)$};
+
+    % Geodesic convexity curve
+    \draw[blue!70, very thick] plot[smooth, domain=0:4] (\x, {0.3*(\x-2)^2 + 0.8});
+
+    % Linear interpolation (dashed)
+    \draw[red!50, dashed, thick] (0, 2) -- (4, 2);
+
+    % Points
+    \fill[blue!70] (0, 2) circle (3pt);
+    \node[left, font=\small] at (0, 2) {$E(\mu_0)$};
+    \fill[blue!70] (4, 2) circle (3pt);
+    \node[right, font=\small] at (4, 2) {$E(\mu_1)$};
+    \fill[blue!70] (2, 0.8) circle (3pt);
+    \node[below, font=\small] at (2, 0.6) {$E(\mu_t)$};
+
+    % Labels
+    \node[font=\footnotesize] at (0, -0.3) {$0$};
+    \node[font=\footnotesize] at (4, -0.3) {$1$};
+    \node[font=\footnotesize] at (2, -0.3) {$t$};
+
+    % Annotation
+    \node[blue!70, font=\footnotesize] at (2.5, 2.8) {convex!};
+    \draw[-{Stealth}, blue!70] (2.5, 2.6) -- (1.5, 1.3);
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\begin{tikzpicture}[scale=0.5]
+    % Geodesic on manifold
+    \draw[gray!50, thick] (0,0) ellipse (2.5 and 1.5);
+
+    % Geodesic path
+    \draw[blue!70, very thick,
+        decoration={markings, mark=at position 0.5 with {\arrow{Stealth}}},
+        postaction={decorate}]
+        (-2, 0.3) .. controls (-0.5, -1) and (0.5, -1) .. (2, 0.3);
+
+    % Points
+    \fill[blue!70] (-2, 0.3) circle (3pt);
+    \node[left, font=\small] at (-2.1, 0.3) {$\mu_0$};
+    \fill[red!70] (0, -0.95) circle (3pt);
+    \node[below, font=\small] at (0, -1.1) {$\mu_t$};
+    \fill[blue!70] (2, 0.3) circle (3pt);
+    \node[right, font=\small] at (2.1, 0.3) {$\mu_1$};
+
+    \node at (0, 1.8) {\small $W_2$-geodesic on $\mathcal{P}_2(M)$};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
