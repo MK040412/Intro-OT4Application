@@ -1,7 +1,7 @@
 \documentclass[aspectratio=169]{beamer}
 
 % Theme
-\usetheme{CambridgeUS}
+\usetheme{Antibes}
 \usecolortheme{beaver}
 
 % Packages
@@ -9,7 +9,16 @@
 \usepackage{mathtools}
 \usepackage{bm}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,shapes,calc,decorations.pathreplacing}
+\usetikzlibrary{arrows.meta,positioning,shapes,calc,decorations.pathreplacing,overlay-beamer-styles,tikzmark}
+
+% For equation annotations
+\newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
+\newcommand{\DrawBox}[4][]{%
+    \tikz[overlay,remember picture]{
+        \draw[#1] ($(#2)+(-0.1em,1.8ex)$) rectangle ($(#3)+(0.1em,-0.5ex)$);
+        \node[#1,anchor=north] at ($(#2)!0.5!(#3)+(0,-0.5ex)$) {#4};
+    }
+}
 
 % Custom commands
 \newcommand{\R}{\mathbb{R}}
@@ -44,153 +53,249 @@
 %==============================================================================
 
 %==============================================================================
-% Slide 3: Monge Problem (1781)
+% Slide 3: Monge Problem - Intuition
 %==============================================================================
-\begin{frame}{The Monge Problem (1781)}
-\begin{columns}
-\begin{column}{0.55\textwidth}
-\textbf{Historical Context:}
-\begin{itemize}
-    \item Gaspard Monge, France, before the Revolution
-    \item Problem: Move sand from excavations (\textit{d\'eblais}) to constructions (\textit{remblais})
-\end{itemize}
+\begin{frame}{The Monge Problem: Intuition (1781)}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % Left: Sand pile (source)
+    \fill[yellow!60!brown, rounded corners] (-4,-0.5) -- (-3.5,1.5) -- (-2.5,1.8) -- (-1.5,1.2) -- (-1,-0.5) -- cycle;
+    \node[below] at (-2.5,-0.7) {\textbf{D\'eblais} (excavation)};
+    \node[below] at (-2.5,-1.2) {Source density $f(x)$};
 
-\vspace{0.3cm}
-\textbf{Mathematical Formulation:}
-
-Given densities $f, g \geq 0$ on $\R^d$ with $\int f = \int g = 1$, find $T: \R^d \to \R^d$ minimizing:
-\[
-M(T) := \int_{\R^d} |T(x) - x| f(x) \, dx
-\]
-subject to the \textbf{push-forward constraint}.
-\end{column}
-\begin{column}{0.45\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.8]
-    % Source distribution (blue dots)
-    \foreach \x/\y in {0/0, 0.3/0.5, 0.6/0.2, 0.2/0.8, 0.8/0.6} {
-        \fill[blue!70] (\x,\y) circle (3pt);
-    }
-    \node[below,blue!70] at (0.4,-0.3) {Source $\mu$};
-
-    % Target distribution (red dots)
-    \foreach \x/\y in {3.5/0.3, 3.8/0.7, 4.1/0.1, 3.3/0.9, 4.3/0.5} {
-        \fill[red!70] (\x,\y) circle (3pt);
-    }
-    \node[below,red!70] at (3.8,-0.3) {Target $\nu$};
+    % Right: Construction site (target)
+    \draw[thick,fill=brown!30] (1,-0.5) rectangle (4,0);
+    \draw[thick,fill=brown!30] (1.5,0) rectangle (3.5,0.8);
+    \draw[thick,fill=brown!30] (2,0.8) rectangle (3,1.4);
+    \node[below] at (2.5,-0.7) {\textbf{Remblais} (construction)};
+    \node[below] at (2.5,-1.2) {Target density $g(y)$};
 
     % Transport arrows
-    \draw[-{Stealth},thick,gray!60] (0,0) -- (3.5,0.3);
-    \draw[-{Stealth},thick,gray!60] (0.3,0.5) -- (3.8,0.7);
-    \draw[-{Stealth},thick,gray!60] (0.6,0.2) -- (4.1,0.1);
-    \draw[-{Stealth},thick,gray!60] (0.2,0.8) -- (3.3,0.9);
-    \draw[-{Stealth},thick,gray!60] (0.8,0.6) -- (4.3,0.5);
+    \draw[-{Stealth},thick,blue!70,decorate,decoration={snake,amplitude=2pt,segment length=10pt}] (-1.2,0.8) -- (1.2,0.5);
+    \node[above,blue!70] at (0,1.2) {Transport $T$};
 
-    \node at (2.1,1.3) {Transport $T$};
+    % Question
+    \node[draw,rounded corners,fill=red!10] at (0,-2) {\textbf{Goal:} Minimize total work (cost)};
 \end{tikzpicture}
+\end{center}
+\end{frame}
+
+%==============================================================================
+% Slide 4: Monge Cost - Annotated
+%==============================================================================
+\begin{frame}{The Monge Cost Function}
+\begin{center}
+\begin{tikzpicture}[remember picture]
+    % Main equation
+    \node[scale=1.3] (eq) {
+        $M(T) \;:=\; \displaystyle\int_{\mathbb{R}^d} \underbrace{|T(x) - x|}_{\text{distance}} \cdot \underbrace{f(x)}_{\text{density}} \, dx$
+    };
+\end{tikzpicture}
+
+\vspace{0.8cm}
+
+\begin{tikzpicture}[scale=0.85]
+    % Annotation boxes
+    \node[draw,rounded corners,fill=blue!10,text width=3.5cm,align=center] (box1) at (-5,0) {
+        \textbf{$T(x)$}\\[2pt]
+        Destination of particle at $x$
+    };
+
+    \node[draw,rounded corners,fill=green!10,text width=3.5cm,align=center] (box2) at (0,0) {
+        \textbf{$|T(x)-x|$}\\[2pt]
+        Distance traveled
+    };
+
+    \node[draw,rounded corners,fill=orange!10,text width=3.5cm,align=center] (box3) at (5,0) {
+        \textbf{$f(x)\,dx$}\\[2pt]
+        Amount of mass at $x$
+    };
+
+    % Visual below
+    \begin{scope}[shift={(0,-2.5)}]
+        \fill[blue!50] (-4,0) circle (4pt);
+        \node[below,blue!70] at (-4,-0.3) {$x$};
+
+        \fill[red!50] (0,0) circle (4pt);
+        \node[below,red!70] at (0,-0.3) {$T(x)$};
+
+        \draw[-{Stealth},thick,purple] (-3.8,0) -- (-0.2,0);
+        \node[above,purple] at (-2,0.2) {$|T(x)-x|$};
+    \end{scope}
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+\begin{block}{Interpretation}
+$M(T)$ = \textbf{Total work} = Sum of (distance $\times$ mass) for all particles
+\end{block}
+\end{frame}
+
+%==============================================================================
+% Slide 5: Push-forward Constraint - Visual
+%==============================================================================
+\begin{frame}{The Push-forward Constraint: $T_\#\mu = \nu$}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+    % Source X
+    \draw[thick,blue!70,fill=blue!10] (0,0) ellipse (1.5 and 1);
+    \node[blue!70,font=\bfseries] at (0,1.5) {Source $X$};
+
+    % Subset in X
+    \fill[blue!40] (-0.3,-0.2) ellipse (0.6 and 0.4);
+    \node at (-0.3,-0.2) {\small $T^{-1}(A)$};
+
+    % Arrow
+    \draw[-{Stealth},very thick] (2,0) -- node[above] {$T$} (3.5,0);
+
+    % Target Y
+    \draw[thick,red!70,fill=red!10] (5.5,0) ellipse (1.5 and 1);
+    \node[red!70,font=\bfseries] at (5.5,1.5) {Target $Y$};
+
+    % Subset in Y
+    \fill[red!40] (5.8,-0.2) ellipse (0.6 and 0.4);
+    \node at (5.8,-0.2) {\small $A$};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{tikzpicture}
+    \node[draw,rounded corners,fill=yellow!20,text width=6cm,align=center] {
+        \textbf{Conservation of Mass:}\\[3pt]
+        $\mu(T^{-1}(A)) = \nu(A)$\\[3pt]
+        {\small Mass leaving $T^{-1}(A)$ = Mass arriving at $A$}
+    };
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Formal Definition:}
+\[
+(T_\#\mu)(A) := \mu(T^{-1}(A))
+\]
+
+\vspace{0.3cm}
+\textbf{Equivalent form:}
+\[
+\int_Y \phi(y) \, d(T_\#\mu) = \int_X \phi(T(x)) \, d\mu
+\]
+
+\vspace{0.3cm}
+\begin{alertblock}{Key Point}
+$T_\# \mu = \nu$ means:\\
+``$T$ moves $\mu$ exactly onto $\nu$''
+\end{alertblock}
 \end{column}
 \end{columns}
 \end{frame}
 
 %==============================================================================
-% Slide 4: Push-forward Measure
-%==============================================================================
-\begin{frame}{Push-forward Measure}
-\begin{definition}[Image Measure]
-For a measure $\mu$ on $X$ and a map $T: X \to Y$, the \textbf{push-forward} $\pushf{T}\mu$ is defined by:
-\[
-(\pushf{T}\mu)(A) = \mu(T^{-1}(A)) \quad \text{for every measurable set } A \subset Y
-\]
-\end{definition}
-
-\vspace{0.3cm}
-Equivalently, for every measurable function $\phi$:
-\[
-\int_Y \phi \, d(\pushf{T}\mu) = \int_X (\phi \circ T) \, d\mu
-\]
-
-\vspace{0.3cm}
-\begin{center}
-\begin{tikzpicture}[scale=0.9]
-    % Set X
-    \draw[thick,blue!70] (0,0) ellipse (1.2 and 0.8);
-    \node[blue!70] at (0,-1.2) {$X$};
-    \fill[blue!30] (0.2,0.1) ellipse (0.5 and 0.3);
-    \node at (0.2,0.1) {\small $T^{-1}(A)$};
-
-    % Arrow
-    \draw[-{Stealth},thick] (1.5,0) -- node[above] {$T$} (3,0);
-
-    % Set Y
-    \draw[thick,red!70] (4.5,0) ellipse (1.2 and 0.8);
-    \node[red!70] at (4.5,-1.2) {$Y$};
-    \fill[red!30] (4.7,0.1) ellipse (0.5 and 0.3);
-    \node at (4.7,0.1) {\small $A$};
-
-    % Equation
-    \node at (2.25,-1.8) {$\mu(T^{-1}(A)) = (\pushf{T}\mu)(A)$};
-\end{tikzpicture}
-\end{center}
-\end{frame}
-
-%==============================================================================
-% Slide 5: Monge Problem - General Formulation
+% Slide 6: General Monge Problem - Annotated
 %==============================================================================
 \begin{frame}{General Monge Problem}
-\textbf{General Cost Function:}
+\begin{center}
+\begin{tikzpicture}
+    % Main equation box
+    \node[draw,very thick,rounded corners,fill=gray!10,inner sep=12pt] (main) {
+        $\displaystyle \text{(MP)} \quad \min_{T} \left\{ \int_X c(x, T(x)) \, d\mu(x) \;\Big|\; T_\#\mu = \nu \right\}$
+    };
+\end{tikzpicture}
 
-For a cost $c: X \times Y \to \R$, the \textbf{Monge Problem} (MP) is:
-\[
-\boxed{
-\text{(MP)} \quad \min \left\{ M(T) := \int_X c(x, T(x)) \, d\mu(x) \;:\; \pushf{T}\mu = \nu \right\}
-}
-\]
+\vspace{0.6cm}
+
+\begin{tikzpicture}[scale=0.9]
+    % Annotations
+    \node[draw,rounded corners,fill=blue!15,text width=2.8cm,align=center] (c1) at (-5,0) {
+        \textbf{Cost $c(x,y)$}\\[2pt]
+        {\small Cost to move from $x$ to $y$}
+    };
+
+    \node[draw,rounded corners,fill=green!15,text width=3cm,align=center] (c2) at (-1.2,0) {
+        \textbf{Integral}\\[2pt]
+        {\small Sum over all source points}
+    };
+
+    \node[draw,rounded corners,fill=red!15,text width=3cm,align=center] (c3) at (3,0) {
+        \textbf{Constraint}\\[2pt]
+        {\small Mass conservation}
+    };
+
+    \node[draw,rounded corners,fill=purple!15,text width=2.5cm,align=center] (c4) at (6.5,0) {
+        \textbf{min over $T$}\\[2pt]
+        {\small Find best map}
+    };
+\end{tikzpicture}
+\end{center}
 
 \vspace{0.5cm}
-\textbf{Jacobian Equation:}
 
-If $\mu, \nu$ have densities $f, g$ and $T$ is smooth and injective:
-\[
-g(T(x)) \det(DT(x)) = f(x)
-\]
-
-\vspace{0.3cm}
-\begin{alertblock}{Key Difficulty}
-This equation is \textbf{highly nonlinear} in $T$, making existence proofs challenging.
-\end{alertblock}
+\textbf{Common cost functions:}
+\begin{itemize}
+    \item $c(x,y) = |x-y|$ \quad (Monge's original --- distance)
+    \item $c(x,y) = |x-y|^2$ \quad (Quadratic --- kinetic energy)
+    \item $c(x,y) = -\log|x-y|$ \quad (Logarithmic)
+\end{itemize}
 \end{frame}
 
 %==============================================================================
-% Slide 6: Difficulties with Monge Problem
+% Slide 7: Why Monge is Hard
 %==============================================================================
-\begin{frame}{Difficulties with the Monge Problem}
-\textbf{Why is the Monge Problem Hard?}
+\begin{frame}{Why is the Monge Problem Difficult?}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{Problem: Maps cannot split mass!}
+
+\vspace{0.5cm}
+
+\begin{tikzpicture}[scale=0.9]
+    % Source: single point
+    \fill[blue!70] (0,0) circle (8pt);
+    \node[below,blue!70] at (0,-0.5) {$\mu = \delta_0$};
+    \node[above] at (0,0.5) {\small Single point mass};
+
+    % Target: two points
+    \fill[red!70] (4,0.8) circle (5pt);
+    \fill[red!70] (4,-0.8) circle (5pt);
+    \node[right,red!70] at (4.3,0) {$\nu = \frac{1}{2}\delta_a + \frac{1}{2}\delta_b$};
+
+    % Impossible arrows
+    \draw[-{Stealth},thick,gray,dashed] (0.3,0.1) -- (3.7,0.7);
+    \draw[-{Stealth},thick,gray,dashed] (0.3,-0.1) -- (3.7,-0.7);
+
+    % X mark
+    \node[red,font=\Huge] at (2,0) {\texttimes};
+\end{tikzpicture}
+
+\vspace{0.3cm}
+
+\begin{alertblock}{No Solution Exists!}
+A \textit{function} $T$ must send $0$ to a single point, but we need to split the mass to two destinations.
+\end{alertblock}
+\end{column}
+\begin{column}{0.45\textwidth}
+\textbf{Mathematical Issues:}
 
 \begin{enumerate}
-    \item \textbf{Nonlinearity:} The constraint $\pushf{T}\mu = \nu$ is nonlinear
-    \item \textbf{Non-existence:} Optimal map may not exist!
-    \item \textbf{Weak convergence issues:} If $T_n \rightharpoonup T$, we cannot guarantee $\pushf{T_n}\mu \to \pushf{T}\mu$
+    \item \textbf{Non-convex:}\\
+    {\small Set of valid maps is not convex}
+
+    \vspace{0.3cm}
+    \item \textbf{Non-existence:}\\
+    {\small Minimizer may not exist}
+
+    \vspace{0.3cm}
+    \item \textbf{Nonlinear constraint:}\\
+    {\small $T_\#\mu = \nu$ is hard to handle}
 \end{enumerate}
 
 \vspace{0.5cm}
-\begin{example}[Mass Splitting Required]
-\begin{center}
-\begin{tikzpicture}[scale=0.8]
-    % Source: single point
-    \fill[blue!70] (0,0) circle (5pt);
-    \node[below] at (0,-0.3) {$\mu = \delta_0$};
-
-    % Target: two points
-    \fill[red!70] (3,0.5) circle (3pt);
-    \fill[red!70] (3,-0.5) circle (3pt);
-    \node[below] at (3,-0.9) {$\nu = \frac{1}{2}\delta_a + \frac{1}{2}\delta_b$};
-
-    % Question mark
-    \node at (1.5,0) {\large\textbf{?}};
-\end{tikzpicture}
-\end{center}
-A transport \textbf{map} cannot split mass --- no solution exists!
-\end{example}
+\begin{block}{Historical Note}
+Problem remained unsolved for $\sim$160 years!
+\end{block}
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
@@ -198,84 +303,158 @@ A transport \textbf{map} cannot split mass --- no solution exists!
 %==============================================================================
 
 %==============================================================================
-% Slide 7: Kantorovich's Idea (1942)
+% Slide 8: Kantorovich's Key Idea
 %==============================================================================
-\begin{frame}{Kantorovich's Relaxation (1942)}
-\textbf{Key Insight:} Replace transport \textit{maps} with transport \textit{plans}.
+\begin{frame}{Kantorovich's Brilliant Idea (1942)}
+\begin{center}
+\begin{tikzpicture}
+    % Left: Monge (map)
+    \node[draw,thick,rounded corners,fill=blue!10,text width=4.5cm,align=center,minimum height=3cm] (monge) at (-4,0) {
+        \textbf{Monge: Transport MAP}\\[10pt]
+        $x \mapsto T(x)$\\[5pt]
+        {\small Each particle has ONE destination}
+    };
 
-\vspace{0.3cm}
-\begin{definition}[Transport Plan]
-A \textbf{transport plan} is a measure $\gamma$ on $X \times Y$ with marginals:
-\[
-(\pi_x)_{\#}\gamma = \mu \quad \text{and} \quad (\pi_y)_{\#}\gamma = \nu
-\]
-The set of all such plans is denoted $\Pi(\mu, \nu)$.
-\end{definition}
+    % Right: Kantorovich (plan)
+    \node[draw,thick,rounded corners,fill=red!10,text width=4.5cm,align=center,minimum height=3cm] (kant) at (4,0) {
+        \textbf{Kantorovich: Transport PLAN}\\[10pt]
+        $\gamma(x,y)$\\[5pt]
+        {\small Mass at $x$ can SPLIT to multiple $y$'s}
+    };
 
-\vspace{0.3cm}
-\textbf{Kantorovich Problem (KP):}
-\[
-\boxed{
-\text{(KP)} \quad \min_{\gamma \in \Pi(\mu,\nu)} \int_{X \times Y} c(x,y) \, d\gamma(x,y)
-}
-\]
-
-\begin{block}{Advantages}
-\begin{itemize}
-    \item Linear objective and constraints $\Rightarrow$ \textbf{Linear Programming}
-    \item Existence of minimizer is guaranteed (weak-* compactness)
-    \item Allows \textbf{mass splitting}
-\end{itemize}
-\end{block}
-\end{frame}
-
-%==============================================================================
-% Slide 8: Transport Plans Visualization
-%==============================================================================
-\begin{frame}{Transport Plans: Visualization}
-\begin{columns}
-\begin{column}{0.5\textwidth}
-\textbf{Monge Map:}
-\begin{itemize}
-    \item Each $x$ goes to unique $T(x)$
-    \item No splitting allowed
-    \item $\gamma = (\text{Id} \times T)_{\#}\mu$
-\end{itemize}
+    % Arrow
+    \draw[-{Stealth},very thick,purple] (monge) -- node[above] {\textbf{Relaxation}} (kant);
+\end{tikzpicture}
+\end{center}
 
 \vspace{0.5cm}
-\textbf{Kantorovich Plan:}
-\begin{itemize}
-    \item Mass at $x$ can split to multiple $y$'s
-    \item $\gamma(x,y)$ = amount from $x$ to $y$
-    \item More flexible!
-\end{itemize}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{tikzpicture}[scale=0.7]
+    \fill[blue!60] (0,0) circle (6pt);
+    \fill[red!60] (2,0) circle (4pt);
+    \draw[-{Stealth},thick] (0.2,0) -- (1.8,0);
+    \node[below] at (1,-0.5) {\small Map: $T(x) = y$};
+\end{tikzpicture}
 \end{column}
 \begin{column}{0.5\textwidth}
-\centering
 \begin{tikzpicture}[scale=0.7]
-    % X axis
-    \draw[->] (0,0) -- (4,0) node[right] {$X$};
-    % Y axis
-    \draw[->] (0,0) -- (0,4) node[above] {$Y$};
-
-    % Grid for gamma
-    \fill[red!20] (0.5,2.5) rectangle (1.5,3.5);
-    \fill[red!40] (1.5,1.5) rectangle (2.5,2.5);
-    \fill[red!30] (2.5,0.5) rectangle (3.5,1.5);
-    \fill[red!25] (0.5,1.5) rectangle (1.5,2.5);
-
-    % Labels
-    \node at (2,-0.8) {Transport plan $\gamma$ on $X \times Y$};
-
-    % Marginal arrows
-    \draw[-{Stealth},thick,blue] (2,4.2) -- (2,4.8);
-    \node[blue] at (2,5.2) {$\pi_x$: marginal $\mu$};
-
-    \draw[-{Stealth},thick,green!60!black] (4.2,2) -- (4.8,2);
-    \node[green!60!black,rotate=90] at (5.4,2) {$\pi_y$: marginal $\nu$};
+    \fill[blue!60] (0,0) circle (6pt);
+    \fill[red!60] (2,0.5) circle (3pt);
+    \fill[red!60] (2,-0.5) circle (3pt);
+    \draw[-{Stealth},thick] (0.2,0.1) -- (1.8,0.4);
+    \draw[-{Stealth},thick] (0.2,-0.1) -- (1.8,-0.4);
+    \node[below] at (1,-1) {\small Plan: split allowed!};
 \end{tikzpicture}
 \end{column}
 \end{columns}
+\end{frame}
+
+%==============================================================================
+% Slide 9: Transport Plan Definition
+%==============================================================================
+\begin{frame}{Transport Plan: Formal Definition}
+\begin{center}
+\begin{tikzpicture}
+    \node[draw,very thick,rounded corners,fill=yellow!15,inner sep=10pt] {
+        $\gamma \in \Pi(\mu,\nu)$ \quad means \quad
+        $\begin{cases}
+        (\pi_x)_\# \gamma = \mu & \text{(first marginal)}\\[5pt]
+        (\pi_y)_\# \gamma = \nu & \text{(second marginal)}
+        \end{cases}$
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.65]
+    % Axes
+    \draw[-{Stealth}] (0,0) -- (5,0) node[right] {$X$};
+    \draw[-{Stealth}] (0,0) -- (0,5) node[above] {$Y$};
+
+    % Transport plan (heat map style)
+    \fill[red!60] (1,3) circle (8pt);
+    \fill[red!40] (2,2) circle (10pt);
+    \fill[red!50] (3,1) circle (6pt);
+    \fill[red!30] (1.5,2.5) circle (5pt);
+    \fill[red!45] (2.5,3.5) circle (7pt);
+
+    \node at (2.5,-0.8) {$\gamma$ on $X \times Y$};
+
+    % Marginal arrows
+    \draw[-{Stealth},blue,thick] (2.5,5.2) -- (2.5,5.8) node[above] {$\pi_x \to \mu$};
+    \draw[-{Stealth},green!60!black,thick] (5.2,2.5) -- (5.8,2.5) node[right] {$\pi_y \to \nu$};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Interpretation:}
+\begin{itemize}
+    \item $\gamma(x,y)$ = amount of mass transported from $x$ to $y$
+    \item Row sums = source $\mu$
+    \item Column sums = target $\nu$
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Key property:}
+\[
+\int_Y d\gamma(x,y) = d\mu(x)
+\]
+\[
+\int_X d\gamma(x,y) = d\nu(y)
+\]
+\end{column}
+\end{columns}
+\end{frame}
+
+%==============================================================================
+% Slide 10: Kantorovich Problem - Annotated
+%==============================================================================
+\begin{frame}{The Kantorovich Problem}
+\begin{center}
+\begin{tikzpicture}
+    \node[draw,very thick,rounded corners,fill=gray!10,inner sep=15pt,scale=1.1] {
+        $\displaystyle \text{(KP)} \quad \min_{\gamma \in \Pi(\mu,\nu)} \int_{X \times Y} c(x,y) \, d\gamma(x,y)$
+    };
+\end{tikzpicture}
+
+\vspace{0.8cm}
+
+\begin{tikzpicture}[scale=0.85]
+    % Left box
+    \node[draw,rounded corners,fill=blue!15,text width=4cm,align=center] at (-4,0) {
+        \textbf{Linear in $\gamma$}\\[3pt]
+        {\small Objective is linear!}\\[3pt]
+        $\Rightarrow$ \textbf{Convex optimization}
+    };
+
+    % Middle box
+    \node[draw,rounded corners,fill=green!15,text width=4cm,align=center] at (0,0) {
+        \textbf{Linear constraints}\\[3pt]
+        {\small Marginal conditions are linear}\\[3pt]
+        $\Rightarrow$ \textbf{Linear Programming}
+    };
+
+    % Right box
+    \node[draw,rounded corners,fill=red!15,text width=4cm,align=center] at (4,0) {
+        \textbf{Existence guaranteed}\\[3pt]
+        {\small Weak-* compactness}\\[3pt]
+        $\Rightarrow$ \textbf{Solution exists!}
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{block}{Monge $\subset$ Kantorovich}
+If $T$ is a Monge map, then $\gamma = (\text{Id} \times T)_\# \mu$ is a Kantorovich plan.\\
+So: \quad $\min(\text{KP}) \leq \min(\text{MP})$
+\end{block}
 \end{frame}
 
 %==============================================================================
@@ -283,140 +462,142 @@ The set of all such plans is denoted $\Pi(\mu, \nu)$.
 %==============================================================================
 
 %==============================================================================
-% Slide 9: Brenier's Theorem
+% Slide 11: Brenier's Theorem - Statement
 %==============================================================================
 \begin{frame}{Brenier's Theorem (1991)}
+\begin{center}
+\begin{tikzpicture}
+    \node[draw,very thick,rounded corners,fill=blue!10,inner sep=12pt] {
+        \textbf{Quadratic Cost:} \quad $c(x,y) = |x-y|^2$
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+
 \begin{theorem}[Brenier]
-For the \textbf{quadratic cost} $c(x,y) = |x-y|^2$, if $\mu \ll \mathcal{L}^d$ (absolutely continuous):
+If $\mu \ll \mathcal{L}^d$ (absolutely continuous), then:
 \begin{enumerate}
     \item There exists a \textbf{unique} optimal transport map $T$
-    \item $T = \nabla u$ for some \textbf{convex function} $u$
-    \item The optimal plan is $\gamma = (\text{Id} \times \nabla u)_{\#}\mu$
+    \item $T = \nabla u$ for some \textbf{convex function} $u: \R^d \to \R$
 \end{enumerate}
 \end{theorem}
 
 \vspace{0.3cm}
+
 \begin{center}
 \begin{tikzpicture}[scale=0.8]
     % Convex function
-    \draw[thick,domain=-1.5:1.5,smooth,variable=\x,blue!70] plot ({\x},{0.5*\x*\x});
-    \node[blue!70] at (0,-0.8) {Convex $u$};
+    \begin{scope}
+        \draw[thick,blue!70,fill=blue!10] plot[smooth,domain=-2:2] (\x,{0.3*\x*\x}) -- (2,0) -- (-2,0) -- cycle;
+        \draw[thick,blue!70] plot[smooth,domain=-2:2] (\x,{0.3*\x*\x});
+        \node[below] at (0,-0.3) {Convex $u(x)$};
+    \end{scope}
 
     % Arrow
-    \draw[-{Stealth},thick] (2,0.5) -- node[above] {$\nabla$} (3.5,0.5);
+    \draw[-{Stealth},very thick] (2.5,0.6) -- node[above] {$\nabla$} (4,0.6);
 
-    % Gradient field
-    \begin{scope}[shift={(5,0.5)}]
-        \foreach \x in {-1,-0.5,0,0.5,1} {
-            \foreach \y in {-0.5,0,0.5} {
-                \draw[-{Stealth},red!70,thin] (\x,\y) -- (\x+0.3,\y);
-            }
+    % Gradient = Transport
+    \begin{scope}[shift={(6,0.6)}]
+        \foreach \x in {-1.5,-0.75,0,0.75,1.5} {
+            \draw[-{Stealth},red!70,thick] (\x,0) -- ({\x+0.5*\x},0);
         }
-        \node[red!70] at (0,-1.3) {Transport $T = \nabla u$};
+        \node[below] at (0,-0.8) {$T(x) = \nabla u(x)$};
     \end{scope}
 \end{tikzpicture}
 \end{center}
-\end{frame}
 
-%==============================================================================
-% Slide 10: Monge-Amp\`ere Equation
-%==============================================================================
-\begin{frame}{Connection to Monge-Amp\`ere Equation}
-From the Jacobian equation with $T = \nabla u$:
-\[
-g(\nabla u(x)) \det(D^2 u(x)) = f(x)
-\]
-
-\vspace{0.3cm}
-This is the \textbf{Monge-Amp\`ere equation}:
-\[
-\boxed{\det(D^2 u) = \frac{f(x)}{g(\nabla u(x))}}
-\]
-
-\vspace{0.3cm}
-\begin{itemize}
-    \item Degenerate elliptic PDE in the class of \textbf{convex functions}
-    \item Rich regularity theory (Caffarelli, 1990s)
-    \item Connection to differential geometry
-\end{itemize}
-
-\vspace{0.3cm}
-\begin{block}{Polar Factorization (Brenier)}
-Any vector field $v: \R^d \to \R^d$ can be written as:
-\[
-v = \nabla u \circ s
-\]
-where $u$ is convex and $s$ is measure-preserving.
-\end{block}
-\end{frame}
-
-%==============================================================================
-\section{Existence and Regularity}
-%==============================================================================
-
-%==============================================================================
-% Slide 11: Sudakov's Approach
-%==============================================================================
-\begin{frame}{Sudakov's Approach (1979)}
-\textbf{Strategy for the original Monge cost $c(x,y) = |x-y|$:}
-
-\begin{enumerate}
-    \item Decompose $\R^d$ into \textbf{transport rays} (line segments)
-    \item These rays are preserved by the optimal plan $\gamma$
-    \item Rays are level sets of a \textbf{Lipschitz function} (Kantorovich potential)
-    \item Reduce to a family of \textbf{1D problems}
-\end{enumerate}
-
-\vspace{0.3cm}
-\begin{center}
-\begin{tikzpicture}[scale=0.7]
-    % Transport rays
-    \draw[thick,red!60] (0,0) -- (4,1);
-    \draw[thick,red!60] (0,0.8) -- (4,1.8);
-    \draw[thick,red!60] (0,1.6) -- (4,2.6);
-    \draw[thick,red!60] (0,2.4) -- (4,3.4);
-
-    % Points on rays
-    \fill[blue!70] (0.5,0.125) circle (2pt);
-    \fill[blue!70] (1.5,0.375) circle (2pt);
-    \fill[green!60!black] (3,0.75) circle (2pt);
-    \fill[green!60!black] (3.5,0.875) circle (2pt);
-
-    \node at (2,-0.5) {Transport along rays (1D problem on each)};
-\end{tikzpicture}
-\end{center}
-
-\vspace{0.2cm}
-\begin{alertblock}{Technical Issue}
-Absolute continuity of disintegrations along rays --- fixed by Ambrosio (2003).
+\begin{alertblock}{Remarkable}
+The optimal transport is the \textbf{gradient of a convex function}!
 \end{alertblock}
 \end{frame}
 
 %==============================================================================
-% Slide 12: Regularity Theory
+% Slide 12: Brenier - Intuition
 %==============================================================================
-\begin{frame}{Regularity of Optimal Maps}
-\textbf{Question:} When is the optimal map $T$ smooth?
+\begin{frame}{Brenier's Theorem: Geometric Intuition}
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+    % Left: source
+    \fill[blue!30] (-4,0) ellipse (1.2 and 0.8);
+    \node[blue!70,font=\bfseries] at (-4,-1.3) {Source $\mu$};
+
+    % Right: target
+    \fill[red!30] (4,0) ellipse (1 and 1.2);
+    \node[red!70,font=\bfseries] at (4,-1.5) {Target $\nu$};
+
+    % Convex function in middle
+    \draw[thick,purple!70,fill=purple!10] (0,-1) -- (-1,1.5) -- (1,1.5) -- cycle;
+    \node[purple!70] at (0,2) {Convex $u$};
+
+    % Arrows showing gradient transport
+    \draw[-{Stealth},thick,orange] (-3.2,0.3) .. controls (-1,1) .. (3.2,0.5);
+    \draw[-{Stealth},thick,orange] (-3.5,-0.2) .. controls (-1,-0.5) .. (3.5,-0.3);
+    \draw[-{Stealth},thick,orange] (-3,0.6) .. controls (-0.5,1.5) .. (3.3,0.9);
+
+    \node[orange,font=\bfseries] at (0,-2.5) {$T = \nabla u$ pushes $\mu$ to $\nu$ optimally};
+\end{tikzpicture}
+\end{center}
 
 \vspace{0.3cm}
-\begin{theorem}[Caffarelli, 1990s --- Quadratic Cost]
-If $\mu, \nu$ have smooth, strictly positive densities on convex domains, then $T = \nabla u$ is smooth.
-\end{theorem}
 
-\vspace{0.3cm}
-\textbf{General Costs --- Ma-Trudinger-Wang Condition (2005):}
-
-For $c \in C^4$, regularity holds if:
-\[
-\sum_{i,j,k,l,p,q,r,s} (c_{ij,rs} - c_{ij,p}c^{p,q}c_{q,rs})\xi_i\xi_j\eta_r\eta_s \geq 0
-\]
-for $\xi \perp \eta$ (in a suitable sense).
-
-\vspace{0.3cm}
+\textbf{Why convex?}
 \begin{itemize}
-    \item On Riemannian manifolds: related to \textbf{sectional curvature}
-    \item Condition is \textbf{sharp} (Loeper, 2009)
+    \item Gradient of convex function is \textbf{monotone}: $\langle \nabla u(x) - \nabla u(y), x-y \rangle \geq 0$
+    \item This prevents ``crossing'' of transport paths
+    \item Crossing would waste energy!
 \end{itemize}
+\end{frame}
+
+%==============================================================================
+% Slide 13: Monge-Ampere Equation
+%==============================================================================
+\begin{frame}{Connection to Monge-Amp\`ere Equation}
+\textbf{Starting point:} Mass conservation + $T = \nabla u$
+
+\vspace{0.3cm}
+
+\begin{center}
+\begin{tikzpicture}
+    \node[draw,rounded corners,fill=gray!10,inner sep=10pt] {
+        $g(T(x)) \cdot \det(DT(x)) = f(x)$
+    };
+
+    \draw[-{Stealth},thick] (0,-0.8) -- (0,-1.5);
+    \node[right] at (0.2,-1.15) {\small $T = \nabla u$};
+
+    \node[draw,very thick,rounded corners,fill=yellow!20,inner sep=10pt] at (0,-2.3) {
+        $\det(D^2 u(x)) = \dfrac{f(x)}{g(\nabla u(x))}$
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{tikzpicture}[scale=0.85]
+    \node[draw,rounded corners,fill=blue!10,text width=4.5cm,align=center] at (-4,0) {
+        \textbf{$D^2 u$}\\[3pt]
+        Hessian matrix\\
+        (second derivatives)
+    };
+
+    \node[draw,rounded corners,fill=green!10,text width=4cm,align=center] at (0,0) {
+        \textbf{$\det(D^2 u)$}\\[3pt]
+        Jacobian of $\nabla u$\\
+        (volume distortion)
+    };
+
+    \node[draw,rounded corners,fill=red!10,text width=4cm,align=center] at (4,0) {
+        \textbf{$f/g$}\\[3pt]
+        Ratio of densities\\
+        (how much to compress)
+    };
+\end{tikzpicture}
+
+\vspace{0.3cm}
+\begin{block}{Monge-Amp\`ere PDE}
+Fully nonlinear elliptic PDE --- rich theory (Caffarelli et al.)
+\end{block}
 \end{frame}
 
 %==============================================================================
@@ -424,83 +605,168 @@ for $\xi \perp \eta$ (in a suitable sense).
 %==============================================================================
 
 %==============================================================================
-% Slide 13: Wasserstein Distance - Definition
+% Slide 14: Wasserstein Distance Definition
 %==============================================================================
-\begin{frame}{Wasserstein Distance}
-\begin{definition}[$p$-Wasserstein Distance]
-For probability measures $\mu, \nu$ on $\R^d$ and $p \geq 1$:
-\[
-\boxed{
-W_p(\mu, \nu) := \left( \inf_{\gamma \in \Pi(\mu,\nu)} \int_{X \times Y} |x-y|^p \, d\gamma(x,y) \right)^{1/p}
-}
-\]
-\end{definition}
-
-\vspace{0.3cm}
-\textbf{Properties:}
-\begin{itemize}
-    \item $W_p$ is a \textbf{metric} on $\mathcal{P}_p(\R^d) = \{\mu : \int |x|^p d\mu < \infty\}$
-    \item Metrizes \textbf{weak convergence} + convergence of $p$-th moments
-    \item For $p=2$: $W_2^2(\mu,\nu) = \int |x - \nabla u(x)|^2 d\mu$ (Brenier)
-\end{itemize}
-
-\vspace{0.3cm}
+\begin{frame}{Wasserstein Distance: Definition}
 \begin{center}
-\begin{tikzpicture}[scale=0.6]
-    % Two distributions
-    \draw[thick,blue!70,fill=blue!20] (0,0) ellipse (0.8 and 0.5);
-    \node[below,blue!70] at (0,-0.8) {$\mu$};
-
-    \draw[thick,red!70,fill=red!20] (4,0.3) ellipse (0.6 and 0.7);
-    \node[below,red!70] at (4,-0.7) {$\nu$};
-
-    \draw[<->,thick,dashed] (0.9,0) -- node[above] {$W_p(\mu,\nu)$} (3.3,0.2);
+\begin{tikzpicture}
+    \node[draw,very thick,rounded corners,fill=blue!10,inner sep=15pt,scale=1.1] {
+        $\displaystyle W_p(\mu,\nu) := \left( \inf_{\gamma \in \Pi(\mu,\nu)} \int |x-y|^p \, d\gamma \right)^{1/p}$
+    };
 \end{tikzpicture}
 \end{center}
+
+\vspace{0.5cm}
+
+\begin{tikzpicture}[scale=0.8]
+    % Annotations
+    \node[draw,rounded corners,fill=purple!15,text width=3.5cm,align=center] at (-5,0) {
+        \textbf{$W_p$}\\[3pt]
+        ``Wasserstein-$p$'' or\\
+        ``Earth Mover's Distance''
+    };
+
+    \node[draw,rounded corners,fill=orange!15,text width=3.5cm,align=center] at (0,0) {
+        \textbf{$|x-y|^p$}\\[3pt]
+        Cost of moving\\
+        unit mass from $x$ to $y$
+    };
+
+    \node[draw,rounded corners,fill=green!15,text width=3.5cm,align=center] at (5,0) {
+        \textbf{$(\cdot)^{1/p}$}\\[3pt]
+        Normalization to\\
+        get a metric
+    };
+\end{tikzpicture}
+
+\vspace{0.5cm}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{tikzpicture}[scale=0.6]
+    \fill[blue!40] (0,0) ellipse (0.8 and 0.5);
+    \node[below,blue!70] at (0,-0.8) {$\mu$};
+
+    \fill[red!40] (4,0) ellipse (0.6 and 0.7);
+    \node[below,red!70] at (4,-0.9) {$\nu$};
+
+    \draw[<->,thick,dashed,purple] (0.9,0) -- node[above] {$W_p$} (3.3,0);
+\end{tikzpicture}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Most common:} $p=2$
+\[
+W_2^2(\mu,\nu) = \min_\gamma \int |x-y|^2 d\gamma
+\]
+(Related to kinetic energy)
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
-% Slide 14: Wasserstein Space Structure
+% Slide 15: Wasserstein is a Metric
 %==============================================================================
-\begin{frame}{Structure of Wasserstein Space}
-\textbf{Geodesics in $(\mathcal{P}_2(\R^d), W_2)$:}
-
-The geodesic from $\mu_0$ to $\mu_1$ is:
-\[
-\mu_t = ((1-t)\text{Id} + t\nabla u)_{\#}\mu_0, \quad t \in [0,1]
-\]
-where $\nabla u$ is the optimal map from $\mu_0$ to $\mu_1$.
+\begin{frame}{$W_p$ is a True Distance}
+\begin{theorem}
+$W_p$ is a \textbf{metric} on $\mathcal{P}_p(\R^d) = \{\mu : \int |x|^p d\mu < \infty\}$
+\end{theorem}
 
 \vspace{0.3cm}
+
 \begin{center}
-\begin{tikzpicture}[scale=0.7]
-    % t=0
-    \fill[blue!50] (0,0) ellipse (0.6 and 0.4);
-    \node[below] at (0,-0.7) {$\mu_0$};
+\begin{tikzpicture}[scale=0.85]
+    % Three properties
+    \node[draw,rounded corners,fill=blue!15,text width=4cm,align=center,minimum height=2cm] at (-4.5,0) {
+        \textbf{1. Non-negative}\\[5pt]
+        $W_p(\mu,\nu) \geq 0$\\
+        $W_p(\mu,\nu) = 0 \Leftrightarrow \mu=\nu$
+    };
 
-    % t=0.5
-    \fill[purple!50] (3,0.2) ellipse (0.5 and 0.5);
-    \node[below] at (3,-0.6) {$\mu_{1/2}$};
+    \node[draw,rounded corners,fill=green!15,text width=4cm,align=center,minimum height=2cm] at (0,0) {
+        \textbf{2. Symmetric}\\[5pt]
+        $W_p(\mu,\nu) = W_p(\nu,\mu)$
+    };
 
-    % t=1
-    \fill[red!50] (6,0.4) ellipse (0.4 and 0.6);
-    \node[below] at (6,-0.5) {$\mu_1$};
-
-    % Geodesic curve
-    \draw[thick,dashed,->] (0.7,0) -- (2.4,0.15);
-    \draw[thick,dashed,->] (3.6,0.25) -- (5.5,0.35);
-
-    \node at (3,1.5) {\textbf{Displacement interpolation}};
+    \node[draw,rounded corners,fill=red!15,text width=4cm,align=center,minimum height=2cm] at (4.5,0) {
+        \textbf{3. Triangle inequality}\\[5pt]
+        $W_p(\mu,\rho) \leq$\\
+        $W_p(\mu,\nu) + W_p(\nu,\rho)$
+    };
 \end{tikzpicture}
 \end{center}
 
-\vspace{0.2cm}
-\begin{block}{McCann's Displacement Convexity (1997)}
-Many functionals $\mathcal{F}(\mu)$ are \textbf{convex along geodesics}:
+\vspace{0.5cm}
+
+\begin{block}{Key Property}
+$W_p$ metrizes weak convergence + convergence of moments:
 \[
-\mathcal{F}(\mu_t) \leq (1-t)\mathcal{F}(\mu_0) + t\mathcal{F}(\mu_1)
+W_p(\mu_n, \mu) \to 0 \quad \Leftrightarrow \quad \mu_n \rightharpoonup \mu \text{ and } \int|x|^p d\mu_n \to \int|x|^p d\mu
 \]
 \end{block}
+\end{frame}
+
+%==============================================================================
+% Slide 16: Geodesics in Wasserstein Space
+%==============================================================================
+\begin{frame}{Geodesics in Wasserstein Space}
+\begin{center}
+\begin{tikzpicture}
+    \node[draw,rounded corners,fill=yellow!20,inner sep=10pt] {
+        \textbf{Geodesic from $\mu_0$ to $\mu_1$:} \quad
+        $\mu_t = \big((1-t)\text{Id} + t\,\nabla u\big)_\# \mu_0$
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75]
+    % t=0: Source
+    \fill[blue!50] (0,0) ellipse (0.8 and 0.5);
+    \node[below,font=\bfseries] at (0,-0.8) {$\mu_0$};
+    \node[above] at (0,0.7) {$t=0$};
+
+    % t=0.33
+    \fill[blue!35!red!35] (3,0.1) ellipse (0.7 and 0.55);
+    \node[below] at (3,-0.7) {$\mu_{1/3}$};
+    \node[above] at (3,0.8) {$t=\frac{1}{3}$};
+
+    % t=0.66
+    \fill[blue!20!red!50] (6,0.2) ellipse (0.6 and 0.6);
+    \node[below] at (6,-0.65) {$\mu_{2/3}$};
+    \node[above] at (6,0.85) {$t=\frac{2}{3}$};
+
+    % t=1: Target
+    \fill[red!50] (9,0.3) ellipse (0.5 and 0.7);
+    \node[below,font=\bfseries] at (9,-0.65) {$\mu_1$};
+    \node[above] at (9,1) {$t=1$};
+
+    % Arrows
+    \draw[-{Stealth},thick,dashed] (0.9,0) -- (2.2,0.08);
+    \draw[-{Stealth},thick,dashed] (3.8,0.12) -- (5.3,0.18);
+    \draw[-{Stealth},thick,dashed] (6.7,0.22) -- (8.4,0.28);
+
+    % Label
+    \node[font=\bfseries,purple] at (4.5,-2) {``Displacement Interpolation''};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{Physical meaning:}\\
+Each particle moves along a \textbf{straight line} from its start to its destination, at constant speed.
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Property:}
+\[
+W_2(\mu_0, \mu_t) = t \cdot W_2(\mu_0, \mu_1)
+\]
+(Constant speed geodesic)
+\end{column}
+\end{columns}
 \end{frame}
 
 %==============================================================================
@@ -508,66 +774,166 @@ Many functionals $\mathcal{F}(\mu)$ are \textbf{convex along geodesics}:
 %==============================================================================
 
 %==============================================================================
-% Slide 15: Gradient Flows in Wasserstein Space
+% Slide 17: Gradient Flows - Concept
 %==============================================================================
 \begin{frame}{Gradient Flows in Wasserstein Space}
-\textbf{Key Insight:} Many PDEs are \textbf{gradient flows} in $(\mathcal{P}_2, W_2)$.
+\begin{center}
+\begin{tikzpicture}
+    \node[draw,very thick,rounded corners,fill=green!10,inner sep=12pt] {
+        \textbf{Key Discovery:} Many PDEs are gradient flows in $({\mathcal P}_2, W_2)$
+    };
+\end{tikzpicture}
+\end{center}
 
-\vspace{0.3cm}
-\begin{example}[Heat Equation]
-The heat equation $\partial_t \rho = \Delta \rho$ is the gradient flow of:
+\vspace{0.5cm}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{Classical gradient flow in $\R^n$:}
 \[
-\mathcal{F}(\rho) = \int \rho \log \rho \, dx \quad \text{(Entropy)}
+\dot{x} = -\nabla F(x)
 \]
-\end{example}
-
-\vspace{0.3cm}
-\textbf{JKO Scheme (Jordan-Kinderlehrer-Otto, 1998):}
-
-Discrete-time approximation with time step $\tau$:
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+    % Potential well
+    \draw[thick,blue!70] plot[smooth,domain=-2:2] (\x,{0.5*\x*\x});
+    \fill[red] (1.5,1.125) circle (3pt);
+    \draw[-{Stealth},thick,red] (1.5,1.125) -- (0.7,0.5);
+    \node[right] at (1.6,1.1) {\small particle};
+    \node[below] at (0,-0.3) {$F(x)$};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Gradient flow in $({\mathcal P}_2, W_2)$:}
 \[
-\rho^{n+1} = \arg\min_{\rho} \left\{ \frac{1}{2\tau} W_2^2(\rho, \rho^n) + \mathcal{F}(\rho) \right\}
+\partial_t \rho = -\text{grad}_{W_2} \mathcal{F}(\rho)
 \]
+\begin{center}
+\begin{tikzpicture}[scale=0.6]
+    % Functional landscape (abstract)
+    \draw[thick,purple!70] (-1.5,1.5) .. controls (0,0) .. (1.5,1.5);
+    \fill[orange] (1,0.8) circle (3pt);
+    \draw[-{Stealth},thick,orange] (1,0.8) -- (0.3,0.3);
+    \node[right] at (1.1,0.8) {\small $\rho$};
+    \node[below] at (0,-0.3) {$\mathcal{F}(\rho)$};
+\end{tikzpicture}
+\end{center}
+\end{column}
+\end{columns}
 
 \vspace{0.3cm}
-\begin{itemize}
-    \item Porous medium equation: $\mathcal{F}(\rho) = \frac{1}{m-1}\int \rho^m$
-    \item Fokker-Planck equation: $\mathcal{F}(\rho) = \int \rho \log \rho + \int V \rho$
-\end{itemize}
+\begin{alertblock}{Density evolves to minimize a functional!}
+The density $\rho_t$ flows ``downhill'' on the energy landscape $\mathcal{F}$.
+\end{alertblock}
 \end{frame}
 
 %==============================================================================
-\section{Geometry and Curvature}
+% Slide 18: Heat Equation as Gradient Flow
 %==============================================================================
-
-%==============================================================================
-% Slide 16: Entropy and Ricci Curvature
-%==============================================================================
-\begin{frame}{Entropy and Ricci Curvature}
-\textbf{Remarkable Connection:}
-
-On a Riemannian manifold $(M,g)$:
-\[
-\text{Entropy } E(\rho) = \int \rho \log \rho \text{ is geodesically convex in } W_2
-\]
-\[
-\Updownarrow
-\]
-\[
-\text{Ricci curvature } \geq 0
-\]
+\begin{frame}{Example: Heat Equation}
+\begin{center}
+\begin{tikzpicture}
+    \node[draw,very thick,rounded corners,fill=red!10,inner sep=12pt] {
+        \textbf{Heat equation:} \quad $\partial_t \rho = \Delta \rho$
+    };
+\end{tikzpicture}
+\end{center}
 
 \vspace{0.3cm}
-\begin{block}{Synthetic Ricci Curvature (Lott-Villani, Sturm, 2006-2009)}
-For metric measure spaces $(X, d, m)$, define:
-\[
-\text{Ric} \geq K \quad \Leftrightarrow \quad \text{Entropy is } K\text{-convex along } W_2\text{-geodesics}
-\]
-This extends Ricci curvature bounds to \textbf{non-smooth spaces}!
-\end{block}
 
-\vspace{0.2cm}
-\textit{Major developments by Ambrosio, Gigli, Savar\'e, and others.}
+This is the $W_2$-gradient flow of the \textbf{entropy}:
+
+\begin{center}
+\begin{tikzpicture}
+    \node[draw,thick,rounded corners,fill=yellow!20,inner sep=10pt,scale=1.1] {
+        $\displaystyle \mathcal{F}(\rho) = \int_{\R^d} \rho(x) \log \rho(x) \, dx$
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+    % Initial: peaked
+    \begin{scope}[shift={(-4,0)}]
+        \fill[blue!30] plot[smooth,domain=-1.5:1.5] (\x,{2*exp(-2*\x*\x)}) -- (1.5,0) -- (-1.5,0) -- cycle;
+        \draw[thick,blue!70] plot[smooth,domain=-1.5:1.5] (\x,{2*exp(-2*\x*\x)});
+        \node[below] at (0,-0.3) {$t=0$};
+        \node[above,blue!70] at (0,2.2) {High entropy};
+    \end{scope}
+
+    % Arrow
+    \draw[-{Stealth},very thick] (-2,0.8) -- (-0.5,0.8);
+
+    % Intermediate
+    \begin{scope}[shift={(1,0)}]
+        \fill[purple!30] plot[smooth,domain=-1.5:1.5] (\x,{1.3*exp(-0.8*\x*\x)}) -- (1.5,0) -- (-1.5,0) -- cycle;
+        \draw[thick,purple!70] plot[smooth,domain=-1.5:1.5] (\x,{1.3*exp(-0.8*\x*\x)});
+        \node[below] at (0,-0.3) {$t=1$};
+    \end{scope}
+
+    % Arrow
+    \draw[-{Stealth},very thick] (3,0.8) -- (4.5,0.8);
+
+    % Final: spread out
+    \begin{scope}[shift={(6,0)}]
+        \fill[red!30] plot[smooth,domain=-1.5:1.5] (\x,{0.8*exp(-0.3*\x*\x)}) -- (1.5,0) -- (-1.5,0) -- cycle;
+        \draw[thick,red!70] plot[smooth,domain=-1.5:1.5] (\x,{0.8*exp(-0.3*\x*\x)});
+        \node[below] at (0,-0.3) {$t \to \infty$};
+        \node[above,red!70] at (0,1.2) {Low entropy};
+    \end{scope}
+\end{tikzpicture}
+\end{center}
+
+\textbf{Interpretation:} Heat diffuses to \textbf{maximize entropy} (minimize $-$entropy).
+\end{frame}
+
+%==============================================================================
+% Slide 19: JKO Scheme
+%==============================================================================
+\begin{frame}{JKO Scheme: Discrete Gradient Flow}
+\textbf{Jordan-Kinderlehrer-Otto (1998):}
+
+\begin{center}
+\begin{tikzpicture}
+    \node[draw,very thick,rounded corners,fill=blue!10,inner sep=12pt] {
+        $\displaystyle \rho^{n+1} = \arg\min_\rho \left\{ \frac{1}{2\tau} W_2^2(\rho, \rho^n) + \mathcal{F}(\rho) \right\}$
+    };
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{tikzpicture}[scale=0.85]
+    \node[draw,rounded corners,fill=green!15,text width=4.5cm,align=center] at (-4,0) {
+        \textbf{$\frac{1}{2\tau}W_2^2(\rho,\rho^n)$}\\[5pt]
+        {\small ``Don't move too far from $\rho^n$''}\\
+        (Proximal term)
+    };
+
+    \node[draw,rounded corners,fill=red!15,text width=4.5cm,align=center] at (2,0) {
+        \textbf{$\mathcal{F}(\rho)$}\\[5pt]
+        {\small ``Minimize the energy''}\\
+        (Driving functional)
+    };
+
+    \node[draw,rounded corners,fill=purple!15,text width=3cm,align=center] at (6.5,0) {
+        \textbf{Balance}\\[5pt]
+        {\small Small $\tau$: stay close\\
+        Large $\tau$: minimize $\mathcal{F}$}
+    };
+\end{tikzpicture}
+
+\vspace{0.5cm}
+
+\begin{block}{Convergence}
+As $\tau \to 0$, the discrete scheme converges to the continuous gradient flow:
+\[
+\rho^n \;\longrightarrow\; \rho(n\tau) \quad \text{solves } \partial_t\rho = -\text{grad}_{W_2}\mathcal{F}
+\]
+\end{block}
 \end{frame}
 
 %==============================================================================
@@ -575,198 +941,223 @@ This extends Ricci curvature bounds to \textbf{non-smooth spaces}!
 %==============================================================================
 
 %==============================================================================
-% Slide 17: Applications - Image Processing
+% Slide 20: Applications Overview
 %==============================================================================
-\begin{frame}{Applications: Image Processing}
-\begin{columns}
-\begin{column}{0.5\textwidth}
-\textbf{Color Transfer:}
-\begin{itemize}
-    \item Source image $\to$ color histogram $\mu$
-    \item Target image $\to$ color histogram $\nu$
-    \item Apply optimal map $T$ to transfer colors
-\end{itemize}
-
-\vspace{0.3cm}
-\textbf{Wasserstein Barycenters:}
-\[
-\bar{\mu} = \arg\min_{\mu} \sum_i \lambda_i W_2^2(\mu, \mu_i)
-\]
-Weighted ``average'' of distributions.
-
-\vspace{0.3cm}
-\textbf{Shape Interpolation:}
-
-Geodesics in $W_2$ provide natural morphing between shapes.
-\end{column}
-\begin{column}{0.5\textwidth}
-\centering
-\begin{tikzpicture}[scale=0.6]
-    % Image 1
-    \draw[thick] (0,0) rectangle (2,2);
-    \fill[blue!30] (0.2,0.2) rectangle (1,1);
-    \fill[red!30] (1,1) rectangle (1.8,1.8);
-    \node[below] at (1,-0.3) {Image 1};
-
-    % Arrow
-    \draw[-{Stealth},thick] (2.3,1) -- (3.7,1);
-    \node[above] at (3,1.2) {\small OT};
-
-    % Image 2
-    \draw[thick] (4,0) rectangle (6,2);
-    \fill[green!30] (4.2,0.2) rectangle (5,1);
-    \fill[yellow!50] (5,1) rectangle (5.8,1.8);
-    \node[below] at (5,-0.3) {Image 2};
-
-    % Barycenter below
-    \draw[thick] (2,3) rectangle (4,5);
-    \fill[cyan!30] (2.2,3.2) rectangle (3,4);
-    \fill[orange!30] (3,4) rectangle (3.8,4.8);
-    \node[above] at (3,5.2) {Barycenter};
-
-    \draw[-{Stealth},dashed] (1,2.2) -- (2.5,3);
-    \draw[-{Stealth},dashed] (5,2.2) -- (3.5,3);
-\end{tikzpicture}
-\end{column}
-\end{columns}
-\end{frame}
-
-%==============================================================================
-% Slide 18: Applications - Economics and Traffic
-%==============================================================================
-\begin{frame}{Applications: Economics and Traffic}
-\textbf{Spatial Economics:}
-\begin{itemize}
-    \item Distribution of resources $\mu$ (supply)
-    \item Distribution of demand $\nu$
-    \item Optimal transport = efficient allocation
-\end{itemize}
-
-\vspace{0.3cm}
-\textbf{Traffic Congestion Models:}
-
-Modified cost depending on \textbf{traffic density}:
-\[
-\min \int_0^1 \int_\Omega g(\rho(t,x)) |\mathbf{v}(t,x)| \, dx \, dt
-\]
-where $g$ is increasing (congestion effect).
-
-\vspace{0.3cm}
-\textbf{Branched Transport:}
-
-For building efficient networks, use \textbf{subadditive} costs:
-\[
-\text{cost}(m) = m^\alpha, \quad 0 < \alpha < 1
-\]
-Favors merging of transport paths $\Rightarrow$ tree-like structures.
-\end{frame}
-
-%==============================================================================
-\section{Computational Methods}
-%==============================================================================
-
-%==============================================================================
-% Slide 19: Computational Aspects
-%==============================================================================
-\begin{frame}{Computational Methods}
-\textbf{1. Linear Programming:}
-\begin{itemize}
-    \item Discrete case: Hungarian algorithm, auction algorithm
-    \item Complexity: $O(n^3)$ for $n$ points
-\end{itemize}
-
-\vspace{0.3cm}
-\textbf{2. Entropic Regularization (Cuturi, 2013):}
-
-Add entropy penalty:
-\[
-\min_{\gamma \in \Pi(\mu,\nu)} \int c \, d\gamma + \varepsilon \int \gamma \log \gamma
-\]
-
-\begin{itemize}
-    \item \textbf{Sinkhorn algorithm}: Iterative scaling, very fast
-    \item Complexity: nearly linear in $n$
-    \item Differentiable $\Rightarrow$ machine learning applications
-\end{itemize}
-
-\vspace{0.3cm}
-\textbf{3. Semi-discrete Methods:}
-\begin{itemize}
-    \item One measure continuous, one discrete
-    \item Solve via Laguerre tessellation / power diagrams
-\end{itemize}
-\end{frame}
-
-%==============================================================================
-% Slide 20: Summary
-%==============================================================================
-\begin{frame}{Summary}
-\begin{columns}
-\begin{column}{0.5\textwidth}
-\textbf{Theory:}
-\begin{itemize}
-    \item \textbf{Monge (1781):} Original formulation
-    \item \textbf{Kantorovich (1942):} Relaxation to plans
-    \item \textbf{Brenier (1991):} $T = \nabla u$ for quadratic cost
-    \item \textbf{Regularity:} MTW condition
-\end{itemize}
-
-\vspace{0.3cm}
-\textbf{Geometry:}
-\begin{itemize}
-    \item Wasserstein distance $W_p$
-    \item Geodesics and curvature
-    \item Gradient flows for PDEs
-\end{itemize}
-\end{column}
-\begin{column}{0.5\textwidth}
-\textbf{Applications:}
-\begin{itemize}
-    \item Image processing
-    \item Machine learning
-    \item Economics
-    \item PDEs and physics
-\end{itemize}
-
-\vspace{0.3cm}
-\textbf{Computation:}
-\begin{itemize}
-    \item Linear programming
-    \item Sinkhorn algorithm
-    \item GPU-accelerated methods
-\end{itemize}
-\end{column}
-\end{columns}
-
-\vspace{0.5cm}
+\begin{frame}{Applications of Optimal Transport}
 \begin{center}
-\textit{``A beautiful theory connecting analysis, geometry, PDEs, and applications.''}
+\begin{tikzpicture}[scale=0.9]
+    % Center
+    \node[draw,circle,very thick,fill=yellow!30,minimum size=2.5cm] (center) at (0,0) {\textbf{Optimal}\\\textbf{Transport}};
+
+    % Applications around
+    \node[draw,rounded corners,fill=blue!20,text width=2.2cm,align=center] (img) at (-4,2) {Image\\Processing};
+    \node[draw,rounded corners,fill=green!20,text width=2.2cm,align=center] (ml) at (0,3.5) {Machine\\Learning};
+    \node[draw,rounded corners,fill=red!20,text width=2.2cm,align=center] (econ) at (4,2) {Economics\\Traffic};
+    \node[draw,rounded corners,fill=purple!20,text width=2.2cm,align=center] (pde) at (4,-2) {PDEs\\Physics};
+    \node[draw,rounded corners,fill=orange!20,text width=2.2cm,align=center] (geom) at (0,-3.5) {Geometry\\Curvature};
+    \node[draw,rounded corners,fill=cyan!20,text width=2.2cm,align=center] (bio) at (-4,-2) {Biology\\Medicine};
+
+    % Connections
+    \draw[thick] (center) -- (img);
+    \draw[thick] (center) -- (ml);
+    \draw[thick] (center) -- (econ);
+    \draw[thick] (center) -- (pde);
+    \draw[thick] (center) -- (geom);
+    \draw[thick] (center) -- (bio);
+\end{tikzpicture}
 \end{center}
 \end{frame}
 
 %==============================================================================
-% Slide 21: References
+% Slide 21: Image Processing
+%==============================================================================
+\begin{frame}{Application: Image Processing}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{Color Transfer:}
+\begin{center}
+\begin{tikzpicture}[scale=0.55]
+    % Source image
+    \draw[thick] (0,0) rectangle (2,2);
+    \fill[blue!60] (0.2,0.2) rectangle (1.8,1);
+    \fill[orange!40] (0.2,1) rectangle (1.8,1.8);
+    \node[below] at (1,-0.2) {\small Source};
+
+    % Arrow
+    \draw[-{Stealth},thick] (2.3,1) -- node[above] {\tiny OT} (3.7,1);
+
+    % Target style
+    \draw[thick] (4,0) rectangle (6,2);
+    \fill[green!60] (4.2,0.2) rectangle (5.8,1);
+    \fill[red!40] (4.2,1) rectangle (5.8,1.8);
+    \node[below] at (5,-0.2) {\small Target style};
+
+    % Result
+    \draw[-{Stealth},thick] (3,-.8) -- (3,-1.5);
+
+    \draw[thick] (2,-3.5) rectangle (4,-1.5);
+    \fill[green!50] (2.2,-3.3) rectangle (3.8,-2.5);
+    \fill[red!30] (2.2,-2.5) rectangle (3.8,-1.7);
+    \node[below] at (3,-3.7) {\small Result};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.2cm}
+$T$ maps source colors $\to$ target palette
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{Wasserstein Barycenter:}
+\[
+\bar\mu = \arg\min_\mu \sum_i \lambda_i W_2^2(\mu, \mu_i)
+\]
+
+\begin{center}
+\begin{tikzpicture}[scale=0.5]
+    \fill[blue!40] (-1.5,1.5) ellipse (0.4 and 0.3);
+    \fill[red!40] (1.5,1.5) ellipse (0.3 and 0.4);
+    \fill[green!40] (0,-1) ellipse (0.35 and 0.35);
+
+    \fill[purple!40] (0,0.5) ellipse (0.35 and 0.35);
+    \node[below] at (0,0) {\small Barycenter};
+
+    \draw[dashed] (-1.5,1.5) -- (0,0.5);
+    \draw[dashed] (1.5,1.5) -- (0,0.5);
+    \draw[dashed] (0,-1) -- (0,0.5);
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.2cm}
+\textbf{Shape Interpolation:}\\
+Geodesics in $W_2$ give smooth morphing.
+\end{column}
+\end{columns}
+\end{frame}
+
+%==============================================================================
+% Slide 22: Computational Methods
+%==============================================================================
+\begin{frame}{Computational Methods}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{1. Linear Programming}
+\begin{itemize}
+    \item Exact for discrete measures
+    \item Hungarian algorithm: $O(n^3)$
+\end{itemize}
+
+\vspace{0.5cm}
+\textbf{2. Entropic Regularization}
+\[
+\min_\gamma \int c\,d\gamma + \varepsilon \int \gamma\log\gamma
+\]
+\begin{itemize}
+    \item \textbf{Sinkhorn algorithm}
+    \item Nearly linear time!
+    \item Differentiable $\Rightarrow$ ML
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+    % Sinkhorn iteration visualization
+    \node[draw,rounded corners,fill=blue!20] (u) at (0,2) {$\mathbf{u}^{(k)}$};
+    \node[draw,rounded corners,fill=red!20] (v) at (3,2) {$\mathbf{v}^{(k)}$};
+    \node[draw,rounded corners,fill=green!20] (K) at (1.5,0) {$K = e^{-C/\varepsilon}$};
+
+    \draw[-{Stealth},thick] (u) -- node[left] {\tiny $K\mathbf{v}$} (K);
+    \draw[-{Stealth},thick] (K) -- node[right] {\tiny $K^T\mathbf{u}$} (v);
+    \draw[-{Stealth},thick,dashed] (v) to[bend right] (u);
+
+    \node at (1.5,-1.2) {\small Sinkhorn iterations};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+\textbf{Cuturi (2013):}\\
+Made OT practical for ML!
+\end{column}
+\end{columns}
+\end{frame}
+
+%==============================================================================
+% Slide 23: Summary
+%==============================================================================
+\begin{frame}{Summary}
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+    % Timeline
+    \draw[thick,-{Stealth}] (-5,0) -- (5.5,0);
+
+    % Events
+    \fill[blue!60] (-4,0) circle (4pt);
+    \node[above,text width=1.8cm,align=center,font=\small] at (-4,0.3) {\textbf{1781}\\Monge};
+
+    \fill[green!60] (-1.5,0) circle (4pt);
+    \node[above,text width=2cm,align=center,font=\small] at (-1.5,0.3) {\textbf{1942}\\Kantorovich};
+
+    \fill[red!60] (1,0) circle (4pt);
+    \node[above,text width=1.8cm,align=center,font=\small] at (1,0.3) {\textbf{1991}\\Brenier};
+
+    \fill[purple!60] (3.5,0) circle (4pt);
+    \node[above,text width=2cm,align=center,font=\small] at (3.5,0.3) {\textbf{2013}\\Sinkhorn/ML};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{columns}
+\begin{column}{0.33\textwidth}
+\textbf{Theory:}
+\begin{itemize}
+    \item Monge maps
+    \item Kantorovich plans
+    \item Brenier: $T=\nabla u$
+    \item Wasserstein metric
+\end{itemize}
+\end{column}
+\begin{column}{0.33\textwidth}
+\textbf{Connections:}
+\begin{itemize}
+    \item PDEs
+    \item Gradient flows
+    \item Ricci curvature
+    \item Probability
+\end{itemize}
+\end{column}
+\begin{column}{0.33\textwidth}
+\textbf{Applications:}
+\begin{itemize}
+    \item Machine learning
+    \item Image processing
+    \item Economics
+    \item Biology
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+%==============================================================================
+% Slide 24: References
 %==============================================================================
 \begin{frame}{References}
 \textbf{Books:}
 \begin{itemize}
-    \item C. Villani, \textit{Topics in Optimal Transportation}, AMS 2003
     \item C. Villani, \textit{Optimal Transport: Old and New}, Springer 2009
-    \item F. Santambrogio, \textit{Optimal Transport for Applied Mathematicians}, Birkh\"auser 2015
-    \item L. Ambrosio, N. Gigli, G. Savar\'e, \textit{Gradient Flows}, Birkh\"auser 2008
+    \item F. Santambrogio, \textit{Optimal Transport for Applied Mathematicians}, 2015
+    \item G. Peyr\'e \& M. Cuturi, \textit{Computational OT}, Found.\&Trends in ML, 2019
 \end{itemize}
 
 \vspace{0.3cm}
 \textbf{Key Papers:}
 \begin{itemize}
     \item Y. Brenier, \textit{Polar factorization...}, CPAM 1991
-    \item R. Jordan, D. Kinderlehrer, F. Otto, \textit{The variational formulation...}, SIAM 1998
+    \item R. Jordan, D. Kinderlehrer, F. Otto, SIAM 1998
     \item M. Cuturi, \textit{Sinkhorn Distances}, NeurIPS 2013
 \end{itemize}
 \end{frame}
 
 %==============================================================================
-% Slide 22: Thank You
+% Slide 25: Thank You
 %==============================================================================
 \begin{frame}
 \begin{center}
