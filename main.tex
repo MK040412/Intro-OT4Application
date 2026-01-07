@@ -31,7 +31,7 @@
 
 %==============================================================================
 \begin{frame}{Outline}
-\tableofcontents
+\tableofcontents[hideallsubsections]
 \end{frame}
 
 %==============================================================================
@@ -100,6 +100,42 @@ for every measurable $\phi$.
     \node[font=\small] at (4.2,0) {$A$};
 \end{tikzpicture}
 \end{center}
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Exercise 1: Push-forward Computation}
+\textbf{Problem:} Let $\mu$ be the uniform measure on $[0,1]$ (i.e., $d\mu = dx$).\\
+Let $T(x) = 2x$.
+
+\vspace{0.5cm}
+\begin{enumerate}
+    \item[(a)] Find the push-forward measure $\nu = T_\#\mu$.
+    \item[(b)] Verify using the formula: $\int_{\R} \phi(y)\,d\nu(y) = \int_0^1 \phi(T(x))\,dx$
+\end{enumerate}
+
+\vspace{0.5cm}
+\textit{Hint:} What is the support of $\nu$? What is its density?
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Solution 1}
+\textbf{(a)} The map $T(x) = 2x$ sends $[0,1]$ to $[0,2]$.
+
+For the density, use the Jacobian formula:
+\[
+g(T(x)) \cdot |T'(x)| = f(x) \quad \Rightarrow \quad g(2x) \cdot 2 = 1
+\]
+So $g(y) = \frac{1}{2}$ on $[0,2]$.
+
+\vspace{0.3cm}
+\textbf{Answer:} $\nu = T_\#\mu$ is the uniform measure on $[0,2]$ with density $g(y) = \frac{1}{2}$.
+
+\vspace{0.5cm}
+\textbf{(b)} Verification: For any test function $\phi$,
+\[
+\int_0^2 \phi(y) \cdot \frac{1}{2}\,dy = \int_0^1 \phi(2x)\,dx \quad \checkmark
+\]
+(Substitute $y = 2x$, $dy = 2dx$)
 \end{frame}
 
 %==============================================================================
@@ -229,6 +265,46 @@ is a valid plan.
 \end{frame}
 
 %==============================================================================
+\begin{frame}{Exercise 2: Discrete Optimal Transport}
+\textbf{Problem:} Consider discrete measures on $\{1, 2\}$:
+\[
+\mu = \frac{1}{2}\delta_1 + \frac{1}{2}\delta_2, \quad \nu = \frac{1}{2}\delta_1 + \frac{1}{2}\delta_2
+\]
+with cost $c(x,y) = |x-y|^2$.
+
+\vspace{0.3cm}
+A transport plan is a $2 \times 2$ matrix $\gamma = \begin{pmatrix} \gamma_{11} & \gamma_{12} \\ \gamma_{21} & \gamma_{22} \end{pmatrix}$ with:
+\begin{itemize}
+    \item Row sums = $\mu$: $\gamma_{11} + \gamma_{12} = \frac{1}{2}$, $\gamma_{21} + \gamma_{22} = \frac{1}{2}$
+    \item Column sums = $\nu$: $\gamma_{11} + \gamma_{21} = \frac{1}{2}$, $\gamma_{12} + \gamma_{22} = \frac{1}{2}$
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Find:} The optimal transport plan minimizing $\sum_{i,j} c(i,j)\gamma_{ij}$.
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Solution 2}
+The cost matrix is: $C = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$ (since $|1-1|^2=0$, $|1-2|^2=1$, etc.)
+
+\vspace{0.3cm}
+Total cost: $\text{Cost}(\gamma) = 0 \cdot \gamma_{11} + 1 \cdot \gamma_{12} + 1 \cdot \gamma_{21} + 0 \cdot \gamma_{22} = \gamma_{12} + \gamma_{21}$
+
+\vspace{0.3cm}
+From constraints: $\gamma_{12} = \frac{1}{2} - \gamma_{11}$ and $\gamma_{21} = \frac{1}{2} - \gamma_{11}$.
+
+So: $\text{Cost} = 1 - 2\gamma_{11}$, minimized when $\gamma_{11} = \frac{1}{2}$.
+
+\vspace{0.3cm}
+\textbf{Optimal plan:}
+\[
+\gamma^* = \begin{pmatrix} 1/2 & 0 \\ 0 & 1/2 \end{pmatrix} \quad \Rightarrow \quad W_2^2(\mu,\nu) = 0
+\]
+
+\textbf{Interpretation:} Mass at 1 stays at 1, mass at 2 stays at 2. (Identity map!)
+\end{frame}
+
+%==============================================================================
 \section{Brenier's Theorem}
 %==============================================================================
 
@@ -287,6 +363,44 @@ This is the \textbf{Monge-Amp\`ere equation}:
 \end{frame}
 
 %==============================================================================
+\begin{frame}{Exercise 3: Brenier Map in 1D}
+\textbf{Problem:} Let $\mu = \text{Uniform}[0,1]$ and $\nu = \text{Uniform}[1,3]$.
+
+\vspace{0.3cm}
+\begin{enumerate}
+    \item[(a)] Find the optimal transport map $T$ for cost $c(x,y) = |x-y|^2$.
+    \item[(b)] Find the convex function $u$ such that $T = u'$.
+    \item[(c)] Compute $W_2^2(\mu,\nu)$.
+\end{enumerate}
+
+\vspace{0.5cm}
+\textit{Hint:} In 1D, the optimal map is the \textbf{monotone rearrangement}: it maps the $p$-th quantile of $\mu$ to the $p$-th quantile of $\nu$.
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Solution 3}
+\textbf{(a)} The quantile functions are:
+\begin{itemize}
+    \item $F_\mu^{-1}(p) = p$ for $p \in [0,1]$
+    \item $F_\nu^{-1}(p) = 1 + 2p$ for $p \in [0,1]$
+\end{itemize}
+Optimal map: $T(x) = F_\nu^{-1}(F_\mu(x)) = 1 + 2x$
+
+\vspace{0.3cm}
+\textbf{(b)} Since $T(x) = u'(x) = 1 + 2x$, integrating:
+\[
+u(x) = x + x^2 + C
+\]
+(This is convex since $u''(x) = 2 > 0$.)
+
+\vspace{0.3cm}
+\textbf{(c)} Wasserstein distance:
+\[
+W_2^2(\mu,\nu) = \int_0^1 |T(x) - x|^2\,dx = \int_0^1 |1+x|^2\,dx = \int_0^1 (1+2x+x^2)\,dx = \frac{7}{3}
+\]
+\end{frame}
+
+%==============================================================================
 \section{Wasserstein Distance}
 %==============================================================================
 
@@ -320,7 +434,7 @@ W_p(\mu, \nu) := \left( \inf_{\gamma \in \Pi(\mu,\nu)} \int_{X \times Y} \underb
 
 %==============================================================================
 \begin{frame}{Geodesics in Wasserstein Space}
-The \textbf{geodesic} from $\mu_0$ to $\mu_1$ in $(\Pp_2, W_2)$:
+The \textbf{geodesic} from $\mu_0$ to $\mu_1$ in $(\mathcal{P}_2, W_2)$:
 \[
 \mu_t = \bigl(\underbrace{(1-t)\text{Id} + t\nabla u}_{\text{linear interpolation of positions}}\bigr)_\# \mu_0, \quad t \in [0,1]
 \]
@@ -355,11 +469,51 @@ for many functionals $\mathcal{F}$.
 \end{frame}
 
 %==============================================================================
+\begin{frame}{Exercise 4: $W_1$ Distance (Earth Mover)}
+\textbf{Problem:} Compute $W_1(\mu, \nu)$ where:
+\[
+\mu = \delta_0, \quad \nu = \frac{1}{2}\delta_{-1} + \frac{1}{2}\delta_{1}
+\]
+
+\vspace{0.5cm}
+\textit{Recall:} $W_1(\mu,\nu) = \inf_{\gamma \in \Pi(\mu,\nu)} \int |x-y| \, d\gamma(x,y)$
+
+\vspace{0.5cm}
+\textit{Hint:} Since $\mu = \delta_0$, any transport plan $\gamma$ must have the form:
+\[
+\gamma = \alpha \cdot \delta_{(0,-1)} + (1-\alpha) \cdot \delta_{(0,1)}
+\]
+for some $\alpha \in [0,1]$. What constraint does $(\pi_y)_\#\gamma = \nu$ give?
+\end{frame}
+
+%==============================================================================
+\begin{frame}{Solution 4}
+From the marginal constraint $(\pi_y)_\#\gamma = \nu = \frac{1}{2}\delta_{-1} + \frac{1}{2}\delta_1$:
+\[
+\alpha = \frac{1}{2}, \quad 1-\alpha = \frac{1}{2}
+\]
+
+So the unique transport plan is:
+\[
+\gamma = \frac{1}{2}\delta_{(0,-1)} + \frac{1}{2}\delta_{(0,1)}
+\]
+
+\vspace{0.3cm}
+The cost:
+\[
+W_1(\mu,\nu) = \int |x-y|\,d\gamma = \frac{1}{2}|0-(-1)| + \frac{1}{2}|0-1| = \frac{1}{2} + \frac{1}{2} = 1
+\]
+
+\vspace{0.3cm}
+\textbf{Note:} This problem has no Monge solution (map), but the Kantorovich formulation gives a unique optimal plan!
+\end{frame}
+
+%==============================================================================
 \section{Gradient Flows}
 %==============================================================================
 
 \begin{frame}{Gradient Flows in Wasserstein Space}
-\textbf{Key insight:} Many PDEs are gradient flows in $(\Pp_2, W_2)$.
+\textbf{Key insight:} Many PDEs are gradient flows in $(\mathcal{P}_2, W_2)$.
 
 \vspace{0.3cm}
 \textbf{Gradient flow} of functional $\mathcal{F}$:
@@ -522,34 +676,6 @@ This extends curvature bounds to \textbf{non-smooth spaces}.
     \item Sinkhorn algorithm (entropic regularization)
     \item GPU-accelerated methods for ML
 \end{itemize}
-\end{frame}
-
-%==============================================================================
-\begin{frame}{References}
-\textbf{Books:}
-\begin{itemize}
-    \item C. Villani, \textit{Optimal Transport: Old and New}, Springer 2009
-    \item F. Santambrogio, \textit{Optimal Transport for Applied Mathematicians}, 2015
-    \item G. Peyr\'e \& M. Cuturi, \textit{Computational OT}, Found.\& Trends ML, 2019
-\end{itemize}
-
-\vspace{0.3cm}
-\textbf{Key papers:}
-\begin{itemize}
-    \item Y. Brenier, \textit{Polar factorization...}, CPAM 1991
-    \item R. Jordan, D. Kinderlehrer, F. Otto, SIAM 1998
-    \item M. Cuturi, \textit{Sinkhorn Distances}, NeurIPS 2013
-\end{itemize}
-\end{frame}
-
-%==============================================================================
-\begin{frame}
-\begin{center}
-\Huge Thank You!
-
-\vspace{1cm}
-\Large Questions?
-\end{center}
 \end{frame}
 
 \end{document}
